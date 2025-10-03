@@ -84,7 +84,7 @@
       for(let name in data){
         let btn=document.createElement("button");
         btn.className="btn";
-        btn.innerText=name+" ("+data[name].total+")";
+        btn.innerText=name+" ("+(data[name].total || 0)+")";
         
         // klik otvara kalkulator
         btn.onclick=()=>openCalc(name);
@@ -148,26 +148,31 @@
     function goHome(){ showScreen("home"); loadWaiters(); }
 
     function openManager(){
-      let rep="";
-      let numMap={}; // broj → lista konobara
+      try {
+        let rep="";
+        let numMap={}; // broj → lista konobara
 
-      for(let name in data){
-        rep+=`<p><b>${name}:</b> ${data[name].total} (${data[name].numbers.join(", ")})</p>`;
-        data[name].numbers.forEach(n=>{
-          if(!numMap[n]) numMap[n]=[];
-          if(!numMap[n].includes(name)) numMap[n].push(name);
-        });
-      }
-
-      rep+="<h3>Duplikati brojeva:</h3>";
-      for(let num in numMap){
-        if(numMap[num].length>1){
-          rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+        for(let name in data){
+          let nums = data[name].numbers || [];
+          rep+=`<p><b>${name}:</b> ${data[name].total} (${nums.join(", ")})</p>`;
+          nums.forEach(n=>{
+            if(!numMap[n]) numMap[n]=[];
+            if(!numMap[n].includes(name)) numMap[n].push(name);
+          });
         }
-      }
 
-      document.getElementById("report").innerHTML=rep;
-      showScreen("manager");
+        rep+="<h3>Duplikati brojeva:</h3>";
+        for(let num in numMap){
+          if(numMap[num].length>1){
+            rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+          }
+        }
+
+        document.getElementById("report").innerHTML=rep;
+        showScreen("manager");
+      } catch(err){
+        alert("Greška u menadžer prikazu: " + err.message);
+      }
     }
 
     function resetAll(){
