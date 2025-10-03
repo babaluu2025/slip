@@ -8,11 +8,10 @@
     body { font-family: Arial, sans-serif; margin:0; padding:0; background:#111; color:#fff; }
     .screen { display:none; padding:20px; }
     .active { display:block; }
-    .btn { background:#444; color:#fff; padding:15px; margin:5px; border:none; border-radius:10px; font-size:18px; }
+    .btn { background:#444; color:#fff; padding:15px; margin:5px; border:none; border-radius:10px; font-size:18px; width:100%; }
     .btn:hover { background:#666; }
     .grid { display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:20px; }
     .calc-display { background:#000; padding:20px; font-size:28px; border-radius:10px; min-height:50px; text-align:right; margin-bottom:10px; }
-    .con-list button { display:block; width:100%; margin:5px 0; font-size:20px; padding:15px; border-radius:10px; }
     .header { font-size:22px; margin-bottom:20px; }
     .danger { background:#a00; }
     .highlight { color:#0f0; }
@@ -22,8 +21,8 @@
 
   <!-- Ekran 1: Lista konobara -->
   <div id="home" class="screen active">
-    <div class="header">Izaberi konobara</div>
-    <div class="con-list" id="waiterList"></div>
+    <div class="header">Izaberi konobara (klik = otvori, duži klik = promeni ime)</div>
+    <div id="waiterList"></div>
     <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
   </div>
 
@@ -62,7 +61,7 @@
     let currentWaiter = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
 
-    // Ako nema imena, postavi default 15
+    // Ako nema podataka, postavi default 15 konobara
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ data["Konobar "+i] = { expr:"", total:0 }; }
       saveData();
@@ -82,7 +81,24 @@
         let btn=document.createElement("button");
         btn.className="btn";
         btn.innerText=name+" ("+data[name].total+")";
+        
+        // klik otvara kalkulator
         btn.onclick=()=>openCalc(name);
+
+        // duži klik menja ime
+        btn.oncontextmenu=(e)=>{
+          e.preventDefault();
+          let newName=prompt("Novo ime za " + name, name);
+          if(newName && !data[newName]){
+            data[newName]=data[name];
+            delete data[name];
+            saveData();
+            loadWaiters();
+          } else if(newName && data[newName]){
+            alert("To ime već postoji!");
+          }
+        };
+
         list.appendChild(btn);
       }
     }
@@ -122,13 +138,9 @@
 
     function openManager(){
       let rep="";
-      // tabela konobara
-      for(let name in data){
-        rep+=`<p><b>${name}:</b> ${data[name].total}</p>`;
-      }
-      // traži duplikate
       let values={};
       for(let name in data){
+        rep+=`<p><b>${name}:</b> ${data[name].total}</p>`;
         let total=data[name].total;
         if(total && total!==0){
           if(!values[total]) values[total]=[];
