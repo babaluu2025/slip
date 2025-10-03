@@ -3,186 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kalkulacija Slipova</title>
+  <title>Kalkulator Konobara</title>
   <style>
-    body { font-family: Arial, sans-serif; background: #111; color: #eee; margin:0; padding:20px; }
-    h1,h2 { text-align:center; color:#0f0; }
-    .konobari { display: grid; grid-template-columns: repeat(3,1fr); gap:10px; margin:20px 0; }
-    button { padding:15px; border:none; border-radius:10px; font-size:16px; cursor:pointer; }
-    .konobarBtn { background:#333; color:#fff; }
-    .konobarBtn:hover { background:#555; }
-    .unos { display:flex; flex-direction:column; gap:10px; max-width:300px; margin:auto; }
-    input { padding:10px; border-radius:8px; border:none; font-size:16px; text-align:center; }
-    .lista { margin-top:20px; }
-    .slip { background:#222; padding:8px; border-radius:6px; margin:5px 0; }
-    .error { color:red; font-weight:bold; margin-top:10px; }
-    .ok { color:#0f0; margin-top:10px; }
-    .nazad { margin:20px auto; display:block; background:#0f0; color:#000; }
-    .admin { margin-top:30px; padding:15px; background:#222; border-radius:10px; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    td,th { border:1px solid #555; padding:5px; text-align:center; }
-    .duplikat { background:#660000; color:#fff; }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#111; color:#fff; }
+    .screen { display:none; padding:20px; }
+    .active { display:block; }
+    .btn { background:#444; color:#fff; padding:15px; margin:5px; border:none; border-radius:10px; font-size:18px; }
+    .btn:hover { background:#666; }
+    .grid { display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:20px; }
+    .calc-display { background:#000; padding:20px; font-size:28px; border-radius:10px; min-height:50px; text-align:right; margin-bottom:10px; }
+    .con-list button { display:block; width:100%; margin:5px 0; font-size:20px; padding:15px; border-radius:10px; }
+    .header { font-size:22px; margin-bottom:20px; }
+    .danger { background:#a00; }
+    .highlight { color:#0f0; }
   </style>
 </head>
 <body>
 
-  <h1>Slip Kalkulacija</h1>
-
-  <div id="mainScreen">
-    <h2>Izaberi konobara</h2>
-    <div class="konobari" id="konobari"></div>
-    <button class="nazad" onclick="prikaziAdmin()">📊 Pregled menadžer</button>
+  <!-- Ekran 1: Lista konobara -->
+  <div id="home" class="screen active">
+    <div class="header">Izaberi konobara</div>
+    <div class="con-list" id="waiterList"></div>
+    <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
   </div>
 
-  <div id="unosScreen" style="display:none;">
-    <h2 id="konobarNaslov"></h2>
-    <div class="unos">
-      <input type="text" id="slipBroj" placeholder="Broj slipa">
-      <input type="number" id="slipIznos" placeholder="Iznos (RSD)">
-      <button onclick="dodajSlip()">Dodaj slip</button>
-      <div id="poruka"></div>
-    </div>
-    <div class="lista">
-      <h3>Unosi</h3>
-      <div id="slipLista"></div>
-    </div>
-    <button class="nazad" onclick="nazad()">⬅ Nazad</button>
-  </div>
-
-  <div id="adminScreen" style="display:none;">
-    <h2>Pregled svih kalkulacija</h2>
-    <div id="adminTabela"></div>
-    <button class="nazad" onclick="nazad()">⬅ Nazad</button>
-  </div>
-
-<script>
-  const maxKonobara = 15;
-  let konobari = [];
-  let sviUnosi = {}; 
-  let aktivanKonobar = null;
-
-  // pamti današnji datum
-  let danas = new Date().toDateString();
-
-  // funkcija za reset ako je novi dan
-  function proveriReset() {
-    let sad = new Date().toDateString();
-    if (sad !== danas) {
-      danas = sad;
-      for (let k in sviUnosi) {
-        sviUnosi[k] = [];
-      }
-    }
-  }
-
-  // napravi imena konobara
-  for (let i=1;i<=maxKonobara;i++){
-    konobari.push("Konobar " + i);
-    sviUnosi["Konobar " + i] = [];
-  }
-
-  // prikaži dugmad za konobare
-  const divKonobari = document.getElementById("konobari");
-  konobari.forEach(k=>{
-    let btn = document.createElement("button");
-    btn.textContent = k;
-    btn.className="konobarBtn";
-    btn.onclick=()=>otvoriUnos(k);
-    divKonobari.appendChild(btn);
-  });
-
-  function otvoriUnos(ime){
-    proveriReset();
-    aktivanKonobar = ime;
-    document.getElementById("mainScreen").style.display="none";
-    document.getElementById("adminScreen").style.display="none";
-    document.getElementById("unosScreen").style.display="block";
-    document.getElementById("konobarNaslov").textContent = ime;
-    prikaziListu();
-  }
-
-  function dodajSlip(){
-    proveriReset();
-    let broj = document.getElementById("slipBroj").value.trim();
-    let iznos = document.getElementById("slipIznos").value.trim();
-    let poruka = document.getElementById("poruka");
-
-    if(!broj || !iznos){
-      poruka.innerHTML = "<span class='error'>Unesi broj i iznos!</span>";
-      return;
-    }
-
-    let lista = sviUnosi[aktivanKonobar];
-    if(lista.some(s=>s.broj===broj)){
-      poruka.innerHTML = "<span class='error'>❌ Duplikat slipa kod ovog konobara!</span>";
-      return;
-    }
-
-    lista.push({broj, iznos:parseFloat(iznos)});
-    poruka.innerHTML = "<span class='ok'>✅ Slip dodat</span>";
-    document.getElementById("slipBroj").value="";
-    document.getElementById("slipIznos").value="";
-    prikaziListu();
-  }
-
-  function prikaziListu(){
-    let div = document.getElementById("slipLista");
-    div.innerHTML="";
-    sviUnosi[aktivanKonobar].forEach(s=>{
-      let d=document.createElement("div");
-      d.className="slip";
-      d.textContent = `#${s.broj} - ${s.iznos} RSD`;
-      div.appendChild(d);
-    });
-  }
-
-  function nazad(){
-    document.getElementById("unosScreen").style.display="none";
-    document.getElementById("adminScreen").style.display="none";
-    document.getElementById("mainScreen").style.display="block";
-  }
-
-  function prikaziAdmin(){
-    proveriReset();
-    document.getElementById("mainScreen").style.display="none";
-    document.getElementById("unosScreen").style.display="none";
-    document.getElementById("adminScreen").style.display="block";
-
-    let tabela = `<table><tr><th>Konobar</th><th>Slip</th><th>Iznos</th></tr>`;
-    let sviSlipovi = {};
-
-    for(let k in sviUnosi){
-      sviUnosi[k].forEach(s=>{
-        let kljuc = s.iznos;
-        if(!sviSlipovi[kljuc]) sviSlipovi[kljuc]=[];
-        sviSlipovi[kljuc].push({konobar:k, broj:s.broj, iznos:s.iznos});
-      });
-    }
-
-    for(let k in sviUnosi){
-      sviUnosi[k].forEach(s=>{
-        let duplikat = sviSlipovi[s.iznos].length>1 ? "duplikat" : "";
-        tabela+=`<tr class="${duplikat}"><td>${k}</td><td>${s.broj}</td><td>${s.iznos}</td></tr>`;
-      });
-    }
-
-    tabela+=`<tr><th colspan="2">UKUPNO</th><th></th></tr>`;
-    for(let k in sviUnosi){
-      let suma = sviUnosi[k].reduce((acc,s)=>acc+s.iznos,0);
-      if(suma>0){
-        tabela+=`<tr><td colspan="2">${k}</td><td>${suma}</td></tr>`;
-      }
-    }
-
-    let total = 0;
-    for(let k in sviUnosi){
-      total += sviUnosi[k].reduce((acc,s)=>acc+s.iznos,0);
-    }
-    tabela+=`<tr><td colspan="2"><b>SVEUKUPNO</b></td><td><b>${total}</b></td></tr>`;
-
-    tabela+="</table>";
-    document.getElementById("adminTabela").innerHTML=tabela;
-  }
-</script>
-</body>
-</html>
+  <!-- Ekran 2: Kalkulator konobara -->
+  <div id="calc" class="screen">
+    <div class="header" id="waiterName"></div>
+    <div class="calc-display" id="dis
