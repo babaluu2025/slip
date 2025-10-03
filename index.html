@@ -65,7 +65,9 @@
 
     // Ako nema podataka, postavi default 15 konobara
     if(Object.keys(data).length === 0){
-      for(let i=1;i<=15;i++){ data["Konobar "+i] = { expr:"", total:0 }; }
+      for(let i=1;i<=15;i++){ 
+        data["Konobar "+i] = { expr:"", total:0, numbers:[] }; 
+      }
       saveData();
     }
 
@@ -123,14 +125,21 @@
     function clearDisplay(){
       data[currentWaiter].expr="";
       data[currentWaiter].total=0;
+      data[currentWaiter].numbers=[];
       document.getElementById("display").innerText="0";
       saveData();
     }
 
     function calcResult(){
       try {
-        let res=eval(data[currentWaiter].expr);
-        data[currentWaiter].total=res;
+        let expr = data[currentWaiter].expr;
+        let res = eval(expr);
+        data[currentWaiter].total = res;
+
+        // Parsiramo sve brojeve koje je konobar uneo
+        let nums = expr.match(/\d+(\.\d+)?/g) || [];
+        data[currentWaiter].numbers = nums.map(n=>parseFloat(n));
+
         document.getElementById("display").innerText=res;
         saveData();
       } catch(e){ alert("Greška u izrazu"); }
@@ -140,28 +149,30 @@
 
     function openManager(){
       let rep="";
-      let values={};
+      let numMap={}; // broj → lista konobara
+
       for(let name in data){
-        rep+=`<p><b>${name}:</b> ${data[name].total}</p>`;
-        let total=data[name].total;
-        if(total && total!==0){
-          if(!values[total]) values[total]=[];
-          values[total].push(name);
+        rep+=`<p><b>${name}:</b> ${data[name].total} (${data[name].numbers.join(", ")})</p>`;
+        data[name].numbers.forEach(n=>{
+          if(!numMap[n]) numMap[n]=[];
+          if(!numMap[n].includes(name)) numMap[n].push(name);
+        });
+      }
+
+      rep+="<h3>Duplikati brojeva:</h3>";
+      for(let num in numMap){
+        if(numMap[num].length>1){
+          rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
         }
       }
-      rep+="<h3>Duplikati:</h3>";
-      for(let val in values){
-        if(values[val].length>1){
-          rep+=`<p class="highlight">Iznos ${val} kod: ${values[val].join(", ")}</p>`;
-        }
-      }
+
       document.getElementById("report").innerHTML=rep;
       showScreen("manager");
     }
 
     function resetAll(){
       if(confirm("Da li sigurno želiš obrisati sve?")){
-        for(let name in data){ data[name]={expr:"", total:0}; }
+        for(let name in data){ data[name]={expr:"", total:0, numbers:[]}; }
         saveData(); goHome();
       }
     }
