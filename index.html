@@ -10,8 +10,8 @@
     body { font-family: Arial, sans-serif; margin:0; padding:0; background:#111; color:#fff; }
     .screen { display:none; padding:20px; }
     .active { display:block; }
-    .btn { background:#444; color:#fff; padding:15px; margin:5px; border:none; border-radius:10px; font-size:18px; width:100%; }
-    .btn:hover { background:#666; }
+    .btn { background:#444; color:#fff; padding:15px; margin:5px; border:none; border-radius:10px; font-size:18px; width:100%; transition:0.1s; }
+    .btn:active { background:#777; transform:scale(0.97); }
     .grid { display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:20px; }
     .calc-display { background:#000; padding:20px; font-size:28px; border-radius:10px; min-height:50px; text-align:right; margin-bottom:10px; }
     .header { font-size:22px; margin-bottom:20px; }
@@ -21,14 +21,12 @@
 </head>
 <body>
 
-  <!-- Ekran 1: Lista konobara -->
   <div id="home" class="screen active">
     <div class="header">Izaberi konobara (klik = otvori, duži klik = promeni ime)</div>
     <div id="waiterList"></div>
     <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
   </div>
 
-  <!-- Ekran 2: Kalkulator konobara -->
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
     <div class="calc-display" id="display">0</div>
@@ -51,7 +49,6 @@
     </div>
   </div>
 
-  <!-- Ekran 3: Menadžer -->
   <div id="manager" class="screen">
     <div class="header">Menadžer pregled</div>
     <div id="report"></div>
@@ -63,7 +60,6 @@
     let currentWaiter = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
 
-    // Ako nema podataka, postavi default 15 konobara
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ 
         data["Konobar "+i] = { expr:"", total:0, numbers:[] }; 
@@ -86,10 +82,7 @@
         btn.className="btn";
         btn.innerText=name+" ("+(data[name].total || 0)+")";
         
-        // klik otvara kalkulator
         btn.onclick=()=>openCalc(name);
-
-        // duži klik menja ime
         btn.oncontextmenu=(e)=>{
           e.preventDefault();
           let newName=prompt("Novo ime za " + name, name);
@@ -102,7 +95,6 @@
             alert("To ime već postoji!");
           }
         };
-
         list.appendChild(btn);
       }
     }
@@ -119,7 +111,6 @@
       expr+=val;
       data[currentWaiter].expr=expr;
       document.getElementById("display").innerText=expr;
-      saveData();
     }
 
     function clearDisplay(){
@@ -130,49 +121,44 @@
       saveData();
     }
 
+    function safeEval(expr){
+      let result = Function('"use strict";return (' + expr + ')')();
+      return Math.round(result * 100) / 100; // zaokruži na 2 decimale
+    }
+
     function calcResult(){
       try {
         let expr = data[currentWaiter].expr;
-        let res = eval(expr);
+        let res = safeEval(expr);
         data[currentWaiter].total = res;
-
-        // Parsiramo sve brojeve koje je konobar uneo
         let nums = expr.match(/\d+(\.\d+)?/g) || [];
         data[currentWaiter].numbers = nums.map(n=>parseFloat(n));
-
         document.getElementById("display").innerText=res;
         saveData();
       } catch(e){ alert("Greška u izrazu"); }
     }
 
-    function goHome(){ showScreen("home"); loadWaiters(); }
+    function goHome(){ showScreen("home"); loadWaiters(); saveData(); }
 
     function openManager(){
-      try {
-        let rep="";
-        let numMap={}; // broj → lista konobara
-
-        for(let name in data){
-          let nums = data[name].numbers || [];
-          rep+=`<p><b>${name}:</b> ${data[name].total} (${nums.join(", ")})</p>`;
-          nums.forEach(n=>{
-            if(!numMap[n]) numMap[n]=[];
-            if(!numMap[n].includes(name)) numMap[n].push(name);
-          });
-        }
-
-        rep+="<h3>Duplikati brojeva:</h3>";
-        for(let num in numMap){
-          if(numMap[num].length>1){
-            rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
-          }
-        }
-
-        document.getElementById("report").innerHTML=rep;
-        showScreen("manager");
-      } catch(err){
-        alert("Greška u menadžer prikazu: " + err.message);
+      let rep="";
+      let numMap={};
+      for(let name in data){
+        let nums = data[name].numbers || [];
+        rep+=`<p><b>${name}:</b> ${data[name].total} (${nums.join(", ")})</p>`;
+        nums.forEach(n=>{
+          if(!numMap[n]) numMap[n]=[];
+          if(!numMap[n].includes(name)) numMap[n].push(name);
+        });
       }
+      rep+="<h3>Duplikati brojeva:</h3>";
+      for(let num in numMap){
+        if(numMap[num].length>1){
+          rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+        }
+      }
+      document.getElementById("report").innerHTML=rep;
+      showScreen("manager");
     }
 
     function resetAll(){
@@ -182,13 +168,11 @@
       }
     }
 
-    // inicijalno
-    loadWaiters();
-
-    // ---- PWA instalacija (Chrome Add to Home Screen) ----
     if('serviceWorker' in navigator){
       window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js'); });
     }
+
+    loadWaiters();
   </script>
 </body>
 </html>
