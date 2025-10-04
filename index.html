@@ -1,147 +1,206 @@
-<script>
-  let currentWaiter = null;
-  let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
-  let clearTimer = null;
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Konobara</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#111111">
+  <style>
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#111; color:#fff; }
+    .screen { display:none; padding:20px; }
+    .active { display:block; }
+    .btn { background:#444; color:#fff; padding:15px; margin:5px; border:none; border-radius:10px; font-size:18px; width:100%; transition:0.1s; }
+    .btn:active { background:#777; transform:scale(0.97); }
+    .grid { display:grid; grid-template-columns: repeat(3,1fr); gap:10px; margin-top:20px; }
+    .calc-display { background:#000; padding:20px; font-size:28px; border-radius:10px; min-height:50px; text-align:right; margin-bottom:10px; }
+    .header { font-size:22px; margin-bottom:20px; }
+    .danger { background:#a00; }
+    .highlight { color:#0f0; }
+  </style>
+</head>
+<body>
 
-  if(Object.keys(data).length === 0){
-    for(let i=1;i<=15;i++){ 
-      data["Konobar "+i] = { expr:"", total:0, numbers:[] }; 
-    }
-    saveData();
-  }
+  <!-- Početni ekran -->
+  <div id="home" class="screen active">
+    <div class="header">Izaberi konobara (klik = otvori, duži klik = promeni ime)</div>
+    <div id="waiterList"></div>
+    <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
+  </div>
 
-  function saveData(){ localStorage.setItem("konobariData", JSON.stringify(data)); }
+  <!-- Kalkulator -->
+  <div id="calc" class="screen">
+    <div class="header" id="waiterName"></div>
+    <div class="calc-display" id="display">0</div>
+    <div class="grid">
+      <button class="btn" onclick="press('7')">7</button>
+      <button class="btn" onclick="press('8')">8</button>
+      <button class="btn" onclick="press('9')">9</button>
+      <button class="btn" onclick="press('4')">4</button>
+      <button class="btn" onclick="press('5')">5</button>
+      <button class="btn" onclick="press('6')">6</button>
+      <button class="btn" onclick="press('1')">1</button>
+      <button class="btn" onclick="press('2')">2</button>
+      <button class="btn" onclick="press('3')">3</button>
+      <button class="btn" onclick="press('0')">0</button>
+      <button class="btn" onclick="press('.')">.</button>
+      <button id="clearBtn" class="btn">C</button>
+      <button class="btn" onclick="press('+')">+</button>
+      <button class="btn" onclick="calcResult()">=</button>
+      <button class="btn" onclick="goHome()">↩ Nazad</button>
+    </div>
+  </div>
 
-  function showScreen(id){
-    document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
-    document.getElementById(id).classList.add("active");
-  }
+  <!-- Menadžer -->
+  <div id="manager" class="screen">
+    <div class="header">Menadžer pregled</div>
+    <div id="report"></div>
+    <button class="btn danger" onclick="resetAll()">🗑 Izbriši sve</button>
+    <button class="btn" onclick="goHome()">↩ Nazad</button>
+  </div>
 
-  function loadWaiters(){
-    let list=document.getElementById("waiterList");
-    list.innerHTML="";
-    for(let name in data){
-      let btn=document.createElement("button");
-      btn.className="btn";
-      btn.innerText=name+" ("+(data[name].total || 0)+")";
-      
-      btn.onclick=()=>openCalc(name);
-      btn.oncontextmenu=(e)=>{
-        e.preventDefault();
-        let newName=prompt("Novo ime za " + name, name);
-        if(newName && !data[newName]){
-          data[newName]=data[name];
-          delete data[name];
-          saveData();
-          loadWaiters();
-        } else if(newName && data[newName]){
-          alert("To ime već postoji!");
-        }
-      };
-      list.appendChild(btn);
-    }
-  }
+  <script>
+    let currentWaiter = null;
+    let clearTimer = null;
+    let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
 
-  function openCalc(name){
-    currentWaiter=name;
-    document.getElementById("waiterName").innerText=name;
-    document.getElementById("display").innerText=data[name].expr || "0";
-    showScreen("calc");
-  }
-
-  function press(val){
-    let expr=data[currentWaiter].expr || "";
-    expr+=val;
-    data[currentWaiter].expr=expr;
-    document.getElementById("display").innerText=expr;
-  }
-
-  // 🔹 Novi sistem za brisanje
-  function clearDisplay(shortPress = true){
-    if(shortPress){
-      // obriši poslednji znak
-      let expr = data[currentWaiter].expr;
-      if(expr.length > 0){
-        expr = expr.slice(0, -1);
-        data[currentWaiter].expr = expr;
-        document.getElementById("display").innerText = expr || "0";
+    if(Object.keys(data).length === 0){
+      for(let i=1;i<=15;i++){ 
+        data["Konobar "+i] = { expr:"", total:0, numbers:[] }; 
       }
-    } else {
-      // dug pritisak briše sve
-      data[currentWaiter].expr = "";
-      data[currentWaiter].total = 0;
-      data[currentWaiter].numbers = [];
-      document.getElementById("display").innerText = "0";
-    }
-    saveData();
-  }
-
-  function safeEval(expr){
-    let result = Function('"use strict";return (' + expr + ')')();
-    return Math.round(result * 100) / 100;
-  }
-
-  function calcResult(){
-    try {
-      let expr = data[currentWaiter].expr;
-      let res = safeEval(expr);
-      data[currentWaiter].total = res;
-      let nums = expr.match(/\d+(\.\d+)?/g) || [];
-      data[currentWaiter].numbers = nums.map(n=>parseFloat(n));
-      document.getElementById("display").innerText=res;
       saveData();
-    } catch(e){ alert("Greška u izrazu"); }
-  }
-
-  function goHome(){ showScreen("home"); loadWaiters(); saveData(); }
-
-  function openManager(){
-    let rep="";
-    let numMap={};
-    for(let name in data){
-      let nums = data[name].numbers || [];
-      rep+=`<p><b>${name}:</b> ${data[name].total} (${nums.join(", ")})</p>`;
-      nums.forEach(n=>{
-        if(!numMap[n]) numMap[n]=[];
-        if(!numMap[n].includes(name)) numMap[n].push(name);
-      });
     }
-    rep+="<h3>Duplikati brojeva:</h3>";
-    for(let num in numMap){
-      if(numMap[num].length>1){
-        rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+
+    function saveData(){ localStorage.setItem("konobariData", JSON.stringify(data)); }
+
+    function showScreen(id){
+      document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function loadWaiters(){
+      let list=document.getElementById("waiterList");
+      list.innerHTML="";
+      for(let name in data){
+        let btn=document.createElement("button");
+        btn.className="btn";
+        btn.innerText=name+" ("+(data[name].total || 0)+")";
+        btn.onclick=()=>openCalc(name);
+        btn.oncontextmenu=(e)=>{
+          e.preventDefault();
+          let newName=prompt("Novo ime za " + name, name);
+          if(newName && !data[newName]){
+            data[newName]=data[name];
+            delete data[name];
+            saveData();
+            loadWaiters();
+          } else if(newName && data[newName]){
+            alert("To ime već postoji!");
+          }
+        };
+        list.appendChild(btn);
       }
     }
-    document.getElementById("report").innerHTML=rep;
-    showScreen("manager");
-  }
 
-  function resetAll(){
-    if(confirm("Da li sigurno želiš obrisati sve?")){
-      for(let name in data){ data[name]={expr:"", total:0, numbers:[]}; }
-      saveData(); goHome();
+    function openCalc(name){
+      currentWaiter=name;
+      document.getElementById("waiterName").innerText=name;
+      document.getElementById("display").innerText=data[name].expr || "0";
+      showScreen("calc");
     }
-  }
 
-  // PWA registracija
-  if('serviceWorker' in navigator){
-    window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js'); });
-  }
-
-  loadWaiters();
-
-  // 🔹 Dodajemo "short/long press" detekciju na C dugme
-  window.addEventListener('load', ()=>{
-    const cBtn = document.querySelector('button[onclick="clearDisplay()"]');
-    if(cBtn){
-      cBtn.addEventListener('touchstart', ()=>{ clearTimer=setTimeout(()=>clearDisplay(false),700); });
-      cBtn.addEventListener('touchend', ()=>{
-        if(clearTimer){ clearTimeout(clearTimer); clearDisplay(true); }
-      });
-      cBtn.addEventListener('mousedown', ()=>{ clearTimer=setTimeout(()=>clearDisplay(false),700); });
-      cBtn.addEventListener('mouseup', ()=>{
-        if(clearTimer){ clearTimeout(clearTimer); clearDisplay(true); }
-      });
+    function press(val){
+      let expr=data[currentWaiter].expr || "";
+      expr+=val;
+      data[currentWaiter].expr=expr;
+      document.getElementById("display").innerText=expr;
     }
-  });
-</script>
+
+    // Kratko C = obriši znak, dugo C = obriši sve
+    function clearDisplay(shortPress = true){
+      if(shortPress){
+        let expr = data[currentWaiter].expr;
+        if(expr.length > 0){
+          expr = expr.slice(0, -1);
+          data[currentWaiter].expr = expr;
+          document.getElementById("display").innerText = expr || "0";
+        }
+      } else {
+        data[currentWaiter].expr = "";
+        data[currentWaiter].total = 0;
+        data[currentWaiter].numbers = [];
+        document.getElementById("display").innerText = "0";
+      }
+      saveData();
+    }
+
+    function safeEval(expr){
+      let result = Function('"use strict";return (' + expr + ')')();
+      return Math.round(result * 100) / 100;
+    }
+
+    function calcResult(){
+      try {
+        let expr = data[currentWaiter].expr;
+        let res = safeEval(expr);
+        data[currentWaiter].total = res;
+        let nums = expr.match(/\d+(\.\d+)?/g) || [];
+        data[currentWaiter].numbers = nums.map(n=>parseFloat(n));
+        document.getElementById("display").innerText=res;
+        saveData();
+      } catch(e){ alert("Greška u izrazu"); }
+    }
+
+    function goHome(){ showScreen("home"); loadWaiters(); saveData(); }
+
+    function openManager(){
+      let rep="";
+      let numMap={};
+      for(let name in data){
+        let nums = data[name].numbers || [];
+        rep+=`<p><b>${name}:</b> ${data[name].total} (${nums.join(", ")})</p>`;
+        nums.forEach(n=>{
+          if(!numMap[n]) numMap[n]=[];
+          if(!numMap[n].includes(name)) numMap[n].push(name);
+        });
+      }
+      rep+="<h3>Duplikati brojeva:</h3>";
+      for(let num in numMap){
+        if(numMap[num].length>1){
+          rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+        }
+      }
+      document.getElementById("report").innerHTML=rep;
+      showScreen("manager");
+    }
+
+    function resetAll(){
+      if(confirm("Da li sigurno želiš obrisati sve?")){
+        for(let name in data){ data[name]={expr:"", total:0, numbers:[]}; }
+        saveData(); goHome();
+      }
+    }
+
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js'); });
+    }
+
+    // Kad se stranica učita
+    window.addEventListener('load', ()=>{
+      loadWaiters();
+
+      const cBtn = document.getElementById("clearBtn");
+      if(cBtn){
+        cBtn.addEventListener('touchstart', ()=>{ clearTimer=setTimeout(()=>clearDisplay(false),700); });
+        cBtn.addEventListener('touchend', ()=>{
+          if(clearTimer){ clearTimeout(clearTimer); clearDisplay(true); }
+        });
+        cBtn.addEventListener('mousedown', ()=>{ clearTimer=setTimeout(()=>clearDisplay(false),700); });
+        cBtn.addEventListener('mouseup', ()=>{
+          if(clearTimer){ clearTimeout(clearTimer); clearDisplay(true); }
+        });
+      }
+    });
+  </script>
+</body>
+</html>
