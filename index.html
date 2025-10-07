@@ -82,20 +82,7 @@
     
     /* POBOLJŠANJE ZA ANDROID - BEZ TASTATURE */
     .no-keyboard {
-      /* Sprečava fokus i tastaturu na Androidu */
       caret-color: transparent;
-    }
-    
-    /* iOS SPECIFIC - samo za iOS uređaje */
-    .ios-only {
-      display: none;
-    }
-    
-    /* Detekcija iOS */
-    @supports (-webkit-touch-callout: none) {
-      .ios-only {
-        display: block;
-      }
     }
     
     /* FIX ZA SKROLOVANJE */
@@ -109,20 +96,21 @@
       padding-bottom: 20px;
     }
     
-    /* Bottom bar fix */
     .bottom-space {
       height: 20px;
+    }
+
+    /* DUGI KLIK - iOS FIX */
+    .long-press-area {
+      position: relative;
     }
   </style>
 </head>
 <body>
 
-  <!-- Skriveni input SAMO ZA iOS -->
-  <input type="text" id="hiddenInput" class="ios-only" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;">
-
   <!-- Početni ekran -->
   <div id="home" class="screen active">
-    <div class="header">Izaberi konobara (klik = otvori, duži klik = promeni ime)</div>
+    <div class="header">Izaberi konobara (klik = otvori, DUGI KLIK = promeni ime)</div>
     <div class="scroll-container">
       <div class="home-content">
         <div id="waiterList"></div>
@@ -157,7 +145,7 @@
 
   <!-- Menadžer -->
   <div id="manager" class="screen">
-    <div class="header">Menadžer pregled</div>
+    <div class="header">Menadžerski pregled</div>
     <div class="scroll-container">
       <div id="report"></div>
       <button class="btn danger" onclick="resetAll()">🗑 Izbriši sve</button>
@@ -169,96 +157,123 @@
   <script>
     let currentWaiter = null;
     let clearTimer = null;
+    let longPressTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
     // DETEKCIJA PLATFORME
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isAndroid = /Android/.test(navigator.userAgent);
 
-    // iOS TASTATURA - SAMO ZA iOS
-    function handleIOSKeyboard() {
-      if (!isIOS) return; // Ignoriši na Androidu
-      
-      const hiddenInput = document.getElementById('hiddenInput');
-      const display = document.getElementById('display');
-      
-      function focusHiddenInput() {
-        hiddenInput.focus();
-        setTimeout(() => hiddenInput.blur(), 100);
-      }
-      
-      if (display) {
-        display.addEventListener('touchstart', focusHiddenInput);
-        display.addEventListener('click', focusHiddenInput);
-      }
-    }
-
-    // INICIJALIZACIJA PODATAKA
+    // INICIJALIZACIJA PODATAKA - ČUVAMO REDOSLED
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ 
-        data["Konobar "+i] = { expr:"", total:0, numbers:[] }; 
+        data["Konobar "+i] = { expr:"", total:0, numbers:[], order: i }; 
       }
       saveData();
     }
 
-    function saveData(){ localStorage.setItem("konobariData", JSON.stringify(data)); }
+    function saveData(){ 
+      localStorage.setItem("konobariData", JSON.stringify(data)); 
+    }
 
     function showScreen(id){
       document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
       
-      // Resetuj scroll na vrh kada promeniš ekran
       const scrollContainer = document.querySelector('#' + id + ' .scroll-container');
       if (scrollContainer) {
         scrollContainer.scrollTop = 0;
       }
-      
-      // iOS: pripremi tastaturu kada se otvori kalkulator
-      if (id === 'calc' && isIOS) {
-        setTimeout(() => {
-          const hiddenInput = document.getElementById('hiddenInput');
-          hiddenInput.focus();
-          setTimeout(() => hiddenInput.blur(), 100);
-        }, 300);
-      }
     }
 
     function loadWaiters(){
-      let list=document.getElementById("waiterList");
-      list.innerHTML="";
-      for(let name in data){
-        let btn=document.createElement("button");
-        btn.className="btn";
-        btn.innerText=name+" ("+(data[name].total || 0)+")";
-        btn.onclick=()=>openCalc(name);
-        btn.oncontextmenu=(e)=>{
-          e.preventDefault();
-          let newName=prompt("Novo ime za " + name, name);
-          if(newName && !data[newName]){
-            data[newName]=data[name];
-            delete data[name];
-            saveData();
-            loadWaiters();
-          } else if(newName && data[newName]){
-            alert("To ime već postoji!");
+      let list = document.getElementById("waiterList");
+      list.innerHTML = "";
+      
+      // SORTIRAJ PO REDOSLEDU
+      const waitersArray = Object.entries(data)
+        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+      
+      for(let [name, waiterData] of waitersArray){
+        let btn = document.createElement("button");
+        btn.className = "btn long-press-area";
+        btn.innerText = name + " (" + (waiterData.total || 0) + ")";
+        btn.dataset.waiterName = name;
+        
+        // OBICAN KLIK - otvori kalkulator
+        btn.addEventListener('click', function(e) {
+          if (!btn.classList.contains('long-press-active')) {
+            openCalc(name);
           }
-        };
+        });
+        
+        // DUGI KLIK ZA PROMENU IMENA - RADI NA iOS I ANDROID
+        btn.addEventListener('touchstart', function(e) {
+          longPressTimer = setTimeout(() => {
+            e.preventDefault();
+            changeWaiterName(name);
+            btn.classList.add('long-press-active');
+          }, 500); // 500ms za dugi klik
+        });
+        
+        btn.addEventListener('touchend', function(e) {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+          setTimeout(() => {
+            btn.classList.remove('long-press-active');
+          }, 200);
+        });
+        
+        // Desktop context menu
+        btn.addEventListener('contextmenu', function(e) {
+          e.preventDefault();
+          changeWaiterName(name);
+        });
+        
         list.appendChild(btn);
       }
     }
 
+    function changeWaiterName(oldName) {
+      let newName = prompt("Novo ime za " + oldName, oldName);
+      if (newName && newName.trim() !== "") {
+        newName = newName.trim();
+        
+        // Proveri da li ime već postoji
+        if (data[newName]) {
+          alert("Konobar sa imenom '" + newName + "' već postoji!");
+          return;
+        }
+        
+        // Sačuvaj redosled i prebaci podatke
+        const oldData = data[oldName];
+        data[newName] = {
+          expr: oldData.expr,
+          total: oldData.total,
+          numbers: oldData.numbers,
+          order: oldData.order // ČUVAMO ISTI REDOSLED
+        };
+        delete data[oldName];
+        
+        saveData();
+        loadWaiters(); // Osveži listu
+      }
+    }
+
     function openCalc(name){
-      currentWaiter=name;
-      document.getElementById("waiterName").innerText=name;
-      document.getElementById("display").innerText=data[name].expr || "0";
+      currentWaiter = name;
+      document.getElementById("waiterName").innerText = name;
+      document.getElementById("display").innerText = data[name].expr || "0";
       showScreen("calc");
     }
 
     function press(val){
-      let expr=data[currentWaiter].expr || "";
-      expr+=val;
-      data[currentWaiter].expr=expr;
-      document.getElementById("display").innerText=expr;
+      let expr = data[currentWaiter].expr || "";
+      expr += val;
+      data[currentWaiter].expr = expr;
+      document.getElementById("display").innerText = expr;
       saveData();
     }
 
@@ -283,10 +298,7 @@
     // SIGURNIJA FUNKCIJA ZA EVALUACIJU
     function safeEval(expr){
       try {
-        // Čišćenje izraza - dozvoljava samo brojeve i osnovne operatore
         const cleanExpr = expr.replace(/[^\d\+\-\*\/\.\(\)]/g, '');
-        
-        // Koristi Function umesto eval za bolju sigurnost
         const result = new Function(`return ${cleanExpr}`)();
         return Math.round(result * 100) / 100;
       } catch(e) {
@@ -303,7 +315,7 @@
         data[currentWaiter].total = res;
         let nums = expr.match(/\d+(\.\d+)?/g) || [];
         data[currentWaiter].numbers = nums.map(n=>parseFloat(n));
-        document.getElementById("display").innerText=res;
+        document.getElementById("display").innerText = res;
         saveData();
       } catch(e){ 
         alert("Greška u izrazu: " + e.message); 
@@ -320,48 +332,63 @@
     }
 
     function openManager(){
-      let rep="";
-      let numMap={};
-      for(let name in data){
-        let nums = data[name].numbers || [];
-        rep+=`<p><b>${name}:</b> ${data[name].total} (${nums.join(", ")})</p>`;
-        nums.forEach(n=>{
-          if(!numMap[n]) numMap[n]=[];
+      let rep = "";
+      let numMap = {};
+      
+      // Sortiraj po redosledu za menadžerski pregled
+      const waitersArray = Object.entries(data)
+        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
+      
+      for(let [name, waiterData] of waitersArray){
+        let nums = waiterData.numbers || [];
+        rep += `<p><b>${name}:</b> ${waiterData.total} (${nums.join(", ")})</p>`;
+        nums.forEach(n => {
+          if(!numMap[n]) numMap[n] = [];
           if(!numMap[n].includes(name)) numMap[n].push(name);
         });
       }
-      rep+="<h3>Duplikati brojeva:</h3>";
+      
+      rep += "<h3>Duplikati brojeva:</h3>";
+      let hasDuplicates = false;
       for(let num in numMap){
-        if(numMap[num].length>1){
-          rep+=`<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+        if(numMap[num].length > 1){
+          rep += `<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+          hasDuplicates = true;
         }
       }
-      document.getElementById("report").innerHTML=rep;
+      if (!hasDuplicates) {
+        rep += "<p>Nema dupliranih brojeva</p>";
+      }
+      
+      document.getElementById("report").innerHTML = rep;
       showScreen("manager");
     }
 
     function resetAll(){
       if(confirm("Da li sigurno želiš obrisati sve?")){
-        for(let name in data){ data[name]={expr:"", total:0, numbers:[]}; }
-        saveData(); goHome();
+        // Sačuvaj samo imena i redosled, obriši ostale podatke
+        for(let name in data){ 
+          data[name] = {
+            expr: "", 
+            total: 0, 
+            numbers: [],
+            order: data[name].order // ČUVAMO REDOSLED
+          }; 
+        }
+        saveData(); 
+        goHome();
       }
     }
 
     // INICIJALIZACIJA
     window.addEventListener('load', ()=>{
       loadWaiters();
-      
-      // SAMO ZA iOS: podesi tastaturu
-      if (isIOS) {
-        handleIOSKeyboard();
-      }
 
       const cBtn = document.getElementById("clearBtn");
       if(cBtn){
-        // Touch events za mobilne uređaje
         cBtn.addEventListener('touchstart', (e)=>{
           e.preventDefault();
-          clearTimer=setTimeout(()=>clearDisplay(false),700);
+          clearTimer = setTimeout(() => clearDisplay(false), 700);
         });
         
         cBtn.addEventListener('touchend', (e)=>{
@@ -372,9 +399,8 @@
           }
         });
         
-        // Mouse events za desktop
         cBtn.addEventListener('mousedown', ()=>{
-          clearTimer=setTimeout(()=>clearDisplay(false),700);
+          clearTimer = setTimeout(() => clearDisplay(false), 700);
         });
         
         cBtn.addEventListener('mouseup', ()=>{
@@ -384,21 +410,15 @@
           }
         });
         
-        // Sprečava context menu na dugmiću
-        cBtn.addEventListener('contextmenu', (e)=>e.preventDefault());
+        cBtn.addEventListener('contextmenu', (e) => e.preventDefault());
       }
       
-      // PWA Service Worker
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('sw.js').catch(console.error);
       }
-      
-      console.log("Platforma:", isIOS ? "iOS" : isAndroid ? "Android" : "Desktop");
     });
 
-    // FIX ZA RESPONSIVE
     window.addEventListener('resize', function() {
-      // Osigurava da se layout prilagodi promeni veličine ekrana
       setTimeout(loadWaiters, 100);
     });
   </script>
