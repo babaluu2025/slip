@@ -20,16 +20,13 @@
       margin:0; padding:0; 
       background:#111; color:#fff;
       height: 100vh;
-      height: -webkit-fill-available;
       overflow: hidden;
     }
     
     .screen { 
       display:none; 
       padding:20px;
-      padding-bottom: calc(20px + env(safe-area-inset-bottom));
       height: 100vh;
-      height: -webkit-fill-available;
     }
     
     .active { display:block; }
@@ -73,27 +70,29 @@
     .danger { background:#a00; }
     .highlight { color:#0f0; }
     
-    /* iOS SPECIFIC FIXES */
-    input, textarea {
-      font-size: 16px !important; /* Sprečava zoom na iOS */
+    /* POBOLJŠANJE ZA ANDROID - BEZ TASTATURE */
+    .no-keyboard {
+      /* Sprečava fokus i tastaturu na Androidu */
+      caret-color: transparent;
     }
     
-    /* Skriveni input za iOS tastaturu */
-    .hidden-input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-      width: 0;
-      height: 0;
-      border: none;
-      background: transparent;
+    /* iOS SPECIFIC - samo za iOS uređaje */
+    .ios-only {
+      display: none;
+    }
+    
+    /* Detekcija iOS */
+    @supports (-webkit-touch-callout: none) {
+      .ios-only {
+        display: block;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Skriveni input za iOS tastaturu -->
-  <input type="text" id="hiddenInput" class="hidden-input" inputmode="numeric">
+  <!-- Skriveni input SAMO ZA iOS -->
+  <input type="text" id="hiddenInput" class="ios-only" style="position:absolute; opacity:0; pointer-events:none; width:0; height:0;">
 
   <!-- Početni ekran -->
   <div id="home" class="screen active">
@@ -105,7 +104,7 @@
   <!-- Kalkulator -->
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
-    <div class="calc-display" id="display" onclick="focusHiddenInput()">0</div>
+    <div class="calc-display no-keyboard" id="display">0</div>
     <div class="grid">
       <button class="btn" onclick="press('7')">7</button>
       <button class="btn" onclick="press('8')">8</button>
@@ -137,25 +136,30 @@
     let currentWaiter = null;
     let clearTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
+    
+    // DETEKCIJA PLATFORME
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
 
-    // FIX ZA iOS TASTATURU
-    function focusHiddenInput() {
+    // iOS TASTATURA - SAMO ZA iOS
+    function handleIOSKeyboard() {
+      if (!isIOS) return; // Ignoriši na Androidu
+      
       const hiddenInput = document.getElementById('hiddenInput');
-      hiddenInput.focus();
-      // Automatski sakrij tastaturu nakon fokusa (samo pokažemo da je dostupna)
-      setTimeout(() => {
-        hiddenInput.blur();
-      }, 100);
-    }
-
-    function setupKeyboardForIOS() {
       const display = document.getElementById('display');
+      
+      function focusHiddenInput() {
+        hiddenInput.focus();
+        setTimeout(() => hiddenInput.blur(), 100);
+      }
+      
       if (display) {
         display.addEventListener('touchstart', focusHiddenInput);
         display.addEventListener('click', focusHiddenInput);
       }
     }
 
+    // INICIJALIZACIJA PODATAKA
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ 
         data["Konobar "+i] = { expr:"", total:0, numbers:[] }; 
@@ -169,10 +173,12 @@
       document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
       
-      // Kada se otvori kalkulator, pripremi tastaturu za iOS
-      if (id === 'calc') {
+      // iOS: pripremi tastaturu kada se otvori kalkulator
+      if (id === 'calc' && isIOS) {
         setTimeout(() => {
-          focusHiddenInput();
+          const hiddenInput = document.getElementById('hiddenInput');
+          hiddenInput.focus();
+          setTimeout(() => hiddenInput.blur(), 100);
         }, 300);
       }
     }
@@ -185,10 +191,6 @@
         btn.className="btn";
         btn.innerText=name+" ("+(data[name].total || 0)+")";
         btn.onclick=()=>openCalc(name);
-        btn.ontouchstart=(e)=>{
-          e.preventDefault();
-          openCalc(name);
-        };
         btn.oncontextmenu=(e)=>{
           e.preventDefault();
           let newName=prompt("Novo ime za " + name, name);
@@ -210,9 +212,6 @@
       document.getElementById("waiterName").innerText=name;
       document.getElementById("display").innerText=data[name].expr || "0";
       showScreen("calc");
-      
-      // iOS FIX: Pripremi tastaturu
-      setTimeout(focusHiddenInput, 100);
     }
 
     function press(val){
@@ -311,7 +310,11 @@
     // INICIJALIZACIJA
     window.addEventListener('load', ()=>{
       loadWaiters();
-      setupKeyboardForIOS(); // iOS FIX
+      
+      // SAMO ZA iOS: podesi tastaturu
+      if (isIOS) {
+        handleIOSKeyboard();
+      }
 
       const cBtn = document.getElementById("clearBtn");
       if(cBtn){
@@ -349,13 +352,8 @@
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('sw.js').catch(console.error);
       }
-    });
-
-    // FIX ZA iOS ORIJENTACIJU
-    window.addEventListener('orientationchange', () => {
-      setTimeout(() => {
-        document.body.style.height = window.innerHeight + 'px';
-      }, 100);
+      
+      console.log("Platforma:", isIOS ? "iOS" : isAndroid ? "Android" : "Desktop");
     });
   </script>
 </body>
