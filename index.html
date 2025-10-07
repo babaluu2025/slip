@@ -19,14 +19,15 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
       margin:0; padding:0; 
       background:#111; color:#fff;
-      height: 100vh;
-      overflow: hidden;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
     
     .screen { 
       display:none; 
       padding:20px;
-      height: 100vh;
+      min-height: 100vh;
+      position: relative;
     }
     
     .active { display:block; }
@@ -66,7 +67,16 @@
       user-select: text;
     }
     
-    .header { font-size:22px; margin-bottom:20px; }
+    .header { 
+      font-size:22px; 
+      margin-bottom:20px; 
+      position: sticky;
+      top: 0;
+      background: #111;
+      padding: 10px 0;
+      z-index: 10;
+    }
+    
     .danger { background:#a00; }
     .highlight { color:#0f0; }
     
@@ -87,6 +97,22 @@
         display: block;
       }
     }
+    
+    /* FIX ZA SKROLOVANJE */
+    .scroll-container {
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      max-height: calc(100vh - 120px);
+    }
+    
+    .home-content {
+      padding-bottom: 20px;
+    }
+    
+    /* Bottom bar fix */
+    .bottom-space {
+      height: 20px;
+    }
   </style>
 </head>
 <body>
@@ -97,8 +123,13 @@
   <!-- Početni ekran -->
   <div id="home" class="screen active">
     <div class="header">Izaberi konobara (klik = otvori, duži klik = promeni ime)</div>
-    <div id="waiterList"></div>
-    <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
+    <div class="scroll-container">
+      <div class="home-content">
+        <div id="waiterList"></div>
+        <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
+        <div class="bottom-space"></div>
+      </div>
+    </div>
   </div>
 
   <!-- Kalkulator -->
@@ -127,9 +158,12 @@
   <!-- Menadžer -->
   <div id="manager" class="screen">
     <div class="header">Menadžer pregled</div>
-    <div id="report"></div>
-    <button class="btn danger" onclick="resetAll()">🗑 Izbriši sve</button>
-    <button class="btn" onclick="goHome()">↩ Nazad</button>
+    <div class="scroll-container">
+      <div id="report"></div>
+      <button class="btn danger" onclick="resetAll()">🗑 Izbriši sve</button>
+      <button class="btn" onclick="goHome()">↩ Nazad</button>
+      <div class="bottom-space"></div>
+    </div>
   </div>
 
   <script>
@@ -172,6 +206,12 @@
     function showScreen(id){
       document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
+      
+      // Resetuj scroll na vrh kada promeniš ekran
+      const scrollContainer = document.querySelector('#' + id + ' .scroll-container');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+      }
       
       // iOS: pripremi tastaturu kada se otvori kalkulator
       if (id === 'calc' && isIOS) {
@@ -354,6 +394,12 @@
       }
       
       console.log("Platforma:", isIOS ? "iOS" : isAndroid ? "Android" : "Desktop");
+    });
+
+    // FIX ZA RESPONSIVE
+    window.addEventListener('resize', function() {
+      // Osigurava da se layout prilagodi promeni veličine ekrana
+      setTimeout(loadWaiters, 100);
     });
   </script>
 </body>
