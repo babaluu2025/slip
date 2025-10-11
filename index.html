@@ -104,6 +104,59 @@
     .long-press-area {
       position: relative;
     }
+
+    /* ANDROID KALKULATOR STIL */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: 20px;
+      max-width: 100%;
+    }
+
+    .calc-btn {
+      background: #444;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 20px;
+      height: 60px;
+      min-height: 60px;
+      transition: 0.1s;
+      -webkit-appearance: none;
+      touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .calc-btn:active {
+      background: #777;
+      transform: scale(0.95);
+    }
+
+    .clear-btn {
+      background: #ff4444;
+    }
+
+    .equals-btn {
+      background: #4CAF50;
+    }
+
+    .back-btn {
+      background: #2196F3;
+      font-size: 16px;
+    }
+
+    /* Responsive za manje ekrane */
+    @media (max-width: 350px) {
+      .calc-btn {
+        height: 50px;
+        min-height: 50px;
+        font-size: 18px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -124,22 +177,31 @@
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
     <div class="calc-display no-keyboard" id="display">0</div>
-    <div class="grid">
-      <button class="btn" onclick="press('7')">7</button>
-      <button class="btn" onclick="press('8')">8</button>
-      <button class="btn" onclick="press('9')">9</button>
-      <button class="btn" onclick="press('4')">4</button>
-      <button class="btn" onclick="press('5')">5</button>
-      <button class="btn" onclick="press('6')">6</button>
-      <button class="btn" onclick="press('1')">1</button>
-      <button class="btn" onclick="press('2')">2</button>
-      <button class="btn" onclick="press('3')">3</button>
-      <button class="btn" onclick="press('0')">0</button>
-      <button class="btn" onclick="press('.')">.</button>
-      <button id="clearBtn" class="btn">C</button>
-      <button class="btn" onclick="press('+')">+</button>
-      <button class="btn" onclick="calcResult()">=</button>
-      <button class="btn" onclick="goHome()">↩ Nazad</button>
+    
+    <!-- PRAVILAN ANDROID KALKULATOR LAYOUT -->
+    <div class="calc-grid">
+      <button class="calc-btn" onclick="press('7')">7</button>
+      <button class="calc-btn" onclick="press('8')">8</button>
+      <button class="calc-btn" onclick="press('9')">9</button>
+      <button class="calc-btn" onclick="press('/')">/</button>
+      
+      <button class="calc-btn" onclick="press('4')">4</button>
+      <button class="calc-btn" onclick="press('5')">5</button>
+      <button class="calc-btn" onclick="press('6')">6</button>
+      <button class="calc-btn" onclick="press('*')">×</button>
+      
+      <button class="calc-btn" onclick="press('1')">1</button>
+      <button class="calc-btn" onclick="press('2')">2</button>
+      <button class="calc-btn" onclick="press('3')">3</button>
+      <button class="calc-btn" onclick="press('-')">-</button>
+      
+      <button class="calc-btn" onclick="press('0')">0</button>
+      <button class="calc-btn" onclick="press('.')">.</button>
+      <button id="clearBtn" class="calc-btn clear-btn">C</button>
+      <button class="calc-btn" onclick="press('+')">+</button>
+      
+      <button class="calc-btn equals-btn" onclick="calcResult()" style="grid-column: span 2;">=</button>
+      <button class="calc-btn back-btn" onclick="goHome()">↩ Nazad</button>
     </div>
   </div>
 
@@ -271,6 +333,18 @@
 
     function press(val){
       let expr = data[currentWaiter].expr || "";
+      
+      // Provera za validne matematičke operatore
+      const validChars = '0123456789.+-*/';
+      if (!validChars.includes(val)) return;
+      
+      // Provera za duple operatore
+      const lastChar = expr.slice(-1);
+      const operators = '+-*/';
+      if (operators.includes(lastChar) && operators.includes(val)) {
+        expr = expr.slice(0, -1); // zameni poslednji operator
+      }
+      
       expr += val;
       data[currentWaiter].expr = expr;
       document.getElementById("display").innerText = expr;
