@@ -161,6 +161,12 @@
       font-size: 20px;
     }
 
+    /* DUGME ZA ZAREZ */
+    .comma-btn {
+      background: #444;
+      font-size: 24px;
+    }
+
     /* RESPONSIVE ZA SVE TELEFONE */
     @media (max-width: 380px) {
       .screen {
@@ -247,12 +253,12 @@
     </div>
   </div>
 
-  <!-- Kalkulator - POBOLJŠANA VERZIJA -->
+  <!-- Kalkulator - SA ZAREZOM UMESTO TAČKE -->
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
     <div class="calc-display no-keyboard" id="display">0</div>
     
-    <!-- POBOLJŠAN ANDROID KALKULATOR LAYOUT -->
+    <!-- KALKULATOR SA ZAREZOM ZA DECIMALE -->
     <div class="calc-grid">
       <button class="calc-btn" onclick="press('7')">7</button>
       <button class="calc-btn" onclick="press('8')">8</button>
@@ -270,7 +276,7 @@
       <button class="calc-btn operator-btn" onclick="press('-')">-</button>
       
       <button class="calc-btn" onclick="press('0')">0</button>
-      <button class="calc-btn" onclick="press('.')">.</button>
+      <button class="calc-btn comma-btn" onclick="press(',')">,</button>
       <button id="clearBtn" class="calc-btn clear-btn">C</button>
       <button class="calc-btn operator-btn" onclick="press('+')">+</button>
       
@@ -329,7 +335,7 @@
       for(let [name, waiterData] of waitersArray){
         let btn = document.createElement("button");
         btn.className = "btn long-press-area";
-        btn.innerText = name + " (" + (waiterData.total || 0) + ")";
+        btn.innerText = name + " (" + (formatNumber(waiterData.total) || 0) + ")";
         btn.dataset.waiterName = name;
         
         // OBICAN KLIK - otvori kalkulator
@@ -402,10 +408,15 @@
     }
 
     function press(val){
-      let expr = data[currentWaiter].expr || "";
+      let expr = data[currentWaiter].expr || "0";
       
-      // Provera za validne matematičke operatore
-      const validChars = '0123456789.+-*/';
+      // Ako je 0, resetuj za novi broj (osim ako nije decimala)
+      if (expr === "0" && val !== "," && !['+', '-', '*', '/'].includes(val)) {
+        expr = "";
+      }
+      
+      // Provera za validne matematičke znakove
+      const validChars = '0123456789,+-*/';
       if (!validChars.includes(val)) return;
       
       // Provera za duple operatore
@@ -415,15 +426,35 @@
         expr = expr.slice(0, -1); // zameni poslednji operator
       }
       
+      // Provera za više zareza u broju
+      if (val === ',') {
+        const lastNumber = expr.split(/[\+\-\*\/]/).pop();
+        if (lastNumber.includes(',')) {
+          return; // već postoji zarez u broju
+        }
+        // Ako je prvi karakter zarez, dodaj 0 ispred
+        if (lastNumber === "") {
+          expr += "0";
+        }
+      }
+      
       expr += val;
       data[currentWaiter].expr = expr;
       updateDisplay();
       saveData();
     }
 
+    // Formatiranje brojeva sa zarezom za prikaz
+    function formatNumber(num) {
+      if (typeof num === 'number') {
+        return num.toString().replace('.', ',');
+      }
+      return num;
+    }
+
     function updateDisplay() {
       const display = document.getElementById("display");
-      const expr = data[currentWaiter].expr || "0";
+      let expr = data[currentWaiter].expr || "0";
       
       // Formatiranje za bolji pregled - dodaje razmake oko operatora
       let formattedExpr = expr
@@ -460,29 +491,40 @@
       saveData();
     }
 
-    // SIGURNIJA FUNKCIJA ZA EVALUACIJU
+    // FUNKCIJA ZA EVALUACIJU SA ZAREZIMA
     function safeEval(expr){
       try {
-        const cleanExpr = expr.replace(/[^\d\+\-\*\/\.\(\)]/g, '');
+        // Zameni zareze tačkama za JavaScript
+        const exprWithDots = expr.replace(/,/g, '.');
+        
+        // Proveri da li izraz završava operatorom
+        const cleanExpr = exprWithDots.replace(/[^\d\+\-\*\/\.\(\)]/g, '');
+        
+        if (/[+\-*/]$/.test(cleanExpr)) {
+          throw new Error("Izraz završava operatorom");
+        }
+        
         const result = new Function(`return ${cleanExpr}`)();
         return Math.round(result * 100) / 100;
       } catch(e) {
-        throw new Error("Nevažeći matematički izraz");
+        throw new Error("Nevažeći matematički izraz: " + e.message);
       }
     }
 
     function calcResult(){
       try {
         let expr = data[currentWaiter].expr;
-        if (!expr) return;
+        if (!expr || expr === "0") return;
         
         let res = safeEval(expr);
         data[currentWaiter].total = res;
-        let nums = expr.match(/\d+(\.\d+)?/g) || [];
-        data[currentWaiter].numbers = nums.map(n=>parseFloat(n));
         
-        // Prikaži rezultat
-        document.getElementById("display").innerText = res;
+        // Ekstraktuj brojeve iz izraza (sa zarezima)
+        let nums = expr.match(/\d+[\.,]?\d*/g) || [];
+        data[currentWaiter].numbers = nums.map(n => parseFloat(n.replace(',', '.')));
+        
+        // Prikaži rezultat sa zarezom
+        document.getElementById("display").innerText = formatNumber(res);
         saveData();
       } catch(e){ 
         alert("Greška u izrazu: " + e.message); 
@@ -508,7 +550,8 @@
       
       for(let [name, waiterData] of waitersArray){
         let nums = waiterData.numbers || [];
-        rep += `<p><b>${name}:</b> ${waiterData.total} (${nums.join(", ")})</p>`;
+        let formattedNums = nums.map(n => formatNumber(n));
+        rep += `<p><b>${name}:</b> ${formatNumber(waiterData.total)} (${formattedNums.join(", ")})</p>`;
         nums.forEach(n => {
           if(!numMap[n]) numMap[n] = [];
           if(!numMap[n].includes(name)) numMap[n].push(name);
@@ -519,7 +562,7 @@
       let hasDuplicates = false;
       for(let num in numMap){
         if(numMap[num].length > 1){
-          rep += `<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
+          rep += `<p class="highlight">Broj ${formatNumber(num)} kod: ${numMap[num].join(", ")}</p>`;
           hasDuplicates = true;
         }
       }
