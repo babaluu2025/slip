@@ -25,7 +25,7 @@
     
     .screen { 
       display:none; 
-      padding:20px;
+      padding:15px;
       min-height: 100vh;
       position: relative;
     }
@@ -55,21 +55,26 @@
       margin-top:20px;
     }
     
+    /* POVEĆAN EKRAN KALKULATORA */
     .calc-display { 
       background:#000; 
       padding:20px; 
-      font-size:28px; 
+      font-size:24px; 
       border-radius:10px; 
-      min-height:50px; 
+      min-height:80px; 
+      max-height:120px;
       text-align:right; 
-      margin-bottom:10px;
+      margin-bottom:15px;
       -webkit-user-select: text;
       user-select: text;
+      overflow-y: auto;
+      word-wrap: break-word;
+      line-height: 1.4;
     }
     
     .header { 
-      font-size:22px; 
-      margin-bottom:20px; 
+      font-size:20px; 
+      margin-bottom:15px; 
       position: sticky;
       top: 0;
       background: #111;
@@ -105,12 +110,12 @@
       position: relative;
     }
 
-    /* ANDROID KALKULATOR STIL */
+    /* ANDROID KALKULATOR STIL - POBOLJŠAN */
     .calc-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      margin-top: 20px;
+      gap: 10px;
+      margin-top: 15px;
       max-width: 100%;
     }
 
@@ -118,10 +123,10 @@
       background: #444;
       color: #fff;
       border: none;
-      border-radius: 8px;
-      font-size: 20px;
-      height: 60px;
-      min-height: 60px;
+      border-radius: 10px;
+      font-size: 22px;
+      height: 65px;
+      min-height: 65px;
       transition: 0.1s;
       -webkit-appearance: none;
       touch-action: manipulation;
@@ -132,16 +137,18 @@
     }
 
     .calc-btn:active {
-      background: #777;
+      background: #666;
       transform: scale(0.95);
     }
 
     .clear-btn {
       background: #ff4444;
+      font-size: 20px;
     }
 
     .equals-btn {
       background: #4CAF50;
+      font-size: 20px;
     }
 
     .back-btn {
@@ -149,13 +156,80 @@
       font-size: 16px;
     }
 
-    /* Responsive za manje ekrane */
-    @media (max-width: 350px) {
+    .operator-btn {
+      background: #555;
+      font-size: 20px;
+    }
+
+    /* RESPONSIVE ZA SVE TELEFONE */
+    @media (max-width: 380px) {
+      .screen {
+        padding: 12px;
+      }
+      
+      .calc-display {
+        font-size: 22px;
+        min-height: 70px;
+        max-height: 100px;
+        padding: 15px;
+      }
+      
       .calc-btn {
-        height: 50px;
-        min-height: 50px;
+        height: 60px;
+        min-height: 60px;
+        font-size: 20px;
+      }
+      
+      .header {
         font-size: 18px;
       }
+    }
+
+    @media (max-width: 320px) {
+      .screen {
+        padding: 10px;
+      }
+      
+      .calc-display {
+        font-size: 20px;
+        min-height: 60px;
+        max-height: 90px;
+        padding: 12px;
+      }
+      
+      .calc-btn {
+        height: 55px;
+        min-height: 55px;
+        font-size: 18px;
+      }
+      
+      .calc-grid {
+        gap: 8px;
+      }
+    }
+
+    /* ZA VECI EKRANE */
+    @media (min-width: 768px) {
+      .calc-display {
+        font-size: 28px;
+        min-height: 100px;
+        max-height: 150px;
+      }
+      
+      .calc-btn {
+        height: 70px;
+        font-size: 24px;
+      }
+    }
+
+    /* ANIMACIJA ZA NOVE BROJEVE */
+    @keyframes fadeIn {
+      from { opacity: 0.7; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .new-number {
+      animation: fadeIn 0.3s ease;
     }
   </style>
 </head>
@@ -173,32 +247,32 @@
     </div>
   </div>
 
-  <!-- Kalkulator -->
+  <!-- Kalkulator - POBOLJŠANA VERZIJA -->
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
     <div class="calc-display no-keyboard" id="display">0</div>
     
-    <!-- PRAVILAN ANDROID KALKULATOR LAYOUT -->
+    <!-- POBOLJŠAN ANDROID KALKULATOR LAYOUT -->
     <div class="calc-grid">
       <button class="calc-btn" onclick="press('7')">7</button>
       <button class="calc-btn" onclick="press('8')">8</button>
       <button class="calc-btn" onclick="press('9')">9</button>
-      <button class="calc-btn" onclick="press('/')">/</button>
+      <button class="calc-btn operator-btn" onclick="press('/')">/</button>
       
       <button class="calc-btn" onclick="press('4')">4</button>
       <button class="calc-btn" onclick="press('5')">5</button>
       <button class="calc-btn" onclick="press('6')">6</button>
-      <button class="calc-btn" onclick="press('*')">×</button>
+      <button class="calc-btn operator-btn" onclick="press('*')">×</button>
       
       <button class="calc-btn" onclick="press('1')">1</button>
       <button class="calc-btn" onclick="press('2')">2</button>
       <button class="calc-btn" onclick="press('3')">3</button>
-      <button class="calc-btn" onclick="press('-')">-</button>
+      <button class="calc-btn operator-btn" onclick="press('-')">-</button>
       
       <button class="calc-btn" onclick="press('0')">0</button>
       <button class="calc-btn" onclick="press('.')">.</button>
       <button id="clearBtn" class="calc-btn clear-btn">C</button>
-      <button class="calc-btn" onclick="press('+')">+</button>
+      <button class="calc-btn operator-btn" onclick="press('+')">+</button>
       
       <button class="calc-btn equals-btn" onclick="calcResult()" style="grid-column: span 2;">=</button>
       <button class="calc-btn back-btn" onclick="goHome()">↩ Nazad</button>
@@ -222,10 +296,6 @@
     let longPressTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
-    // DETEKCIJA PLATFORME
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isAndroid = /Android/.test(navigator.userAgent);
-
     // INICIJALIZACIJA PODATAKA - ČUVAMO REDOSLED
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ 
@@ -275,7 +345,7 @@
             e.preventDefault();
             changeWaiterName(name);
             btn.classList.add('long-press-active');
-          }, 500); // 500ms za dugi klik
+          }, 500);
         });
         
         btn.addEventListener('touchend', function(e) {
@@ -315,19 +385,19 @@
           expr: oldData.expr,
           total: oldData.total,
           numbers: oldData.numbers,
-          order: oldData.order // ČUVAMO ISTI REDOSLED
+          order: oldData.order
         };
         delete data[oldName];
         
         saveData();
-        loadWaiters(); // Osveži listu
+        loadWaiters();
       }
     }
 
     function openCalc(name){
       currentWaiter = name;
       document.getElementById("waiterName").innerText = name;
-      document.getElementById("display").innerText = data[name].expr || "0";
+      updateDisplay();
       showScreen("calc");
     }
 
@@ -347,8 +417,30 @@
       
       expr += val;
       data[currentWaiter].expr = expr;
-      document.getElementById("display").innerText = expr;
+      updateDisplay();
       saveData();
+    }
+
+    function updateDisplay() {
+      const display = document.getElementById("display");
+      const expr = data[currentWaiter].expr || "0";
+      
+      // Formatiranje za bolji pregled - dodaje razmake oko operatora
+      let formattedExpr = expr
+        .replace(/([+\-*/])/g, ' $1 ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      display.innerHTML = formattedExpr;
+      display.classList.add('new-number');
+      
+      // Automatski skrol na dno
+      display.scrollTop = display.scrollHeight;
+      
+      // Ukloni animaciju nakon završetka
+      setTimeout(() => {
+        display.classList.remove('new-number');
+      }, 300);
     }
 
     // Kratko C = obriši znak, dugo C = obriši sve
@@ -358,14 +450,13 @@
         if(expr.length > 0){
           expr = expr.slice(0, -1);
           data[currentWaiter].expr = expr;
-          document.getElementById("display").innerText = expr || "0";
         }
       } else {
         data[currentWaiter].expr = "";
         data[currentWaiter].total = 0;
         data[currentWaiter].numbers = [];
-        document.getElementById("display").innerText = "0";
       }
+      updateDisplay();
       saveData();
     }
 
@@ -389,12 +480,14 @@
         data[currentWaiter].total = res;
         let nums = expr.match(/\d+(\.\d+)?/g) || [];
         data[currentWaiter].numbers = nums.map(n=>parseFloat(n));
+        
+        // Prikaži rezultat
         document.getElementById("display").innerText = res;
         saveData();
       } catch(e){ 
         alert("Greška u izrazu: " + e.message); 
         data[currentWaiter].expr = "";
-        document.getElementById("display").innerText = "0";
+        updateDisplay();
         saveData();
       }
     }
@@ -440,13 +533,12 @@
 
     function resetAll(){
       if(confirm("Da li sigurno želiš obrisati sve?")){
-        // Sačuvaj samo imena i redosled, obriši ostale podatke
         for(let name in data){ 
           data[name] = {
             expr: "", 
             total: 0, 
             numbers: [],
-            order: data[name].order // ČUVAMO REDOSLED
+            order: data[name].order
           }; 
         }
         saveData(); 
