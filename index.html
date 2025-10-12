@@ -46,7 +46,6 @@
     
     .btn:active { background:#666; }
     
-    /* POVEĆAN EKRAN KALKULATORA */
     .calc-display { 
       background:#000; 
       padding:15px; 
@@ -74,7 +73,6 @@
     .danger { background:#a00; }
     .highlight { color:#0f0; }
     
-    /* FIX ZA SKROLOVANJE */
     .scroll-container {
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
@@ -89,7 +87,6 @@
       height: 15px;
     }
 
-    /* ULTRA BRZI KALKULATOR STIL */
     .calc-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -142,7 +139,6 @@
       font-size: 22px;
     }
 
-    /* RESPONSIVE ZA SVE TELEFONE */
     @media (max-width: 380px) {
       .screen {
         padding: 10px;
@@ -165,23 +161,10 @@
         font-size: 16px;
       }
     }
-
-    @media (max-width: 320px) {
-      .calc-btn {
-        height: 50px;
-        min-height: 50px;
-        font-size: 16px;
-      }
-      
-      .calc-grid {
-        gap: 6px;
-      }
-    }
   </style>
 </head>
 <body>
 
-  <!-- Početni ekran -->
   <div id="home" class="screen active">
     <div class="header">Izaberi konobara (klik = otvori, DUGI KLIK = promeni ime)</div>
     <div class="scroll-container">
@@ -193,38 +176,36 @@
     </div>
   </div>
 
-  <!-- Kalkulator - ISPRAVLJENA VERZIJA -->
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
     <div class="calc-display" id="display">0</div>
     
     <div class="calc-grid">
-      <button class="calc-btn" onclick="pressFast('7')">7</button>
-      <button class="calc-btn" onclick="pressFast('8')">8</button>
-      <button class="calc-btn" onclick="pressFast('9')">9</button>
-      <button class="calc-btn operator-btn" onclick="pressFast('/')">/</button>
+      <button class="calc-btn" onclick="addToDisplay('7')">7</button>
+      <button class="calc-btn" onclick="addToDisplay('8')">8</button>
+      <button class="calc-btn" onclick="addToDisplay('9')">9</button>
+      <button class="calc-btn operator-btn" onclick="addToDisplay('/')">/</button>
       
-      <button class="calc-btn" onclick="pressFast('4')">4</button>
-      <button class="calc-btn" onclick="pressFast('5')">5</button>
-      <button class="calc-btn" onclick="pressFast('6')">6</button>
-      <button class="calc-btn operator-btn" onclick="pressFast('*')">×</button>
+      <button class="calc-btn" onclick="addToDisplay('4')">4</button>
+      <button class="calc-btn" onclick="addToDisplay('5')">5</button>
+      <button class="calc-btn" onclick="addToDisplay('6')">6</button>
+      <button class="calc-btn operator-btn" onclick="addToDisplay('*')">×</button>
       
-      <button class="calc-btn" onclick="pressFast('1')">1</button>
-      <button class="calc-btn" onclick="pressFast('2')">2</button>
-      <button class="calc-btn" onclick="pressFast('3')">3</button>
-      <button class="calc-btn operator-btn" onclick="pressFast('-')">-</button>
+      <button class="calc-btn" onclick="addToDisplay('1')">1</button>
+      <button class="calc-btn" onclick="addToDisplay('2')">2</button>
+      <button class="calc-btn" onclick="addToDisplay('3')">3</button>
+      <button class="calc-btn operator-btn" onclick="addToDisplay('-')">-</button>
       
-      <button class="calc-btn" onclick="pressFast('0')">0</button>
-      <button class="calc-btn comma-btn" onclick="pressFast(',')">,</button>
-      <button class="calc-btn clear-btn" onclick="clearFast()">C</button>
-      <button class="calc-btn operator-btn" onclick="pressFast('+')">+</button>
+      <button class="calc-btn" onclick="addToDisplay('0')">0</button>
+      <button class="calc-btn comma-btn" onclick="addToDisplay('.')">.</button>
+      <button class="calc-btn clear-btn" onclick="clearDisplay()">C</button>
+      <button class="calc-btn operator-btn" onclick="addToDisplay('+')">+</button>
       
-      <button class="calc-btn equals-btn" onclick="calcResultFast()" style="grid-column: span 2;">=</button>
-      <button class="calc-btn back-btn" onclick="goHomeFast()">↩ Nazad</button>
+      <button class="calc-btn equals-btn" onclick="calculate()" style="grid-column: span 2;">=</button>
+      <button class="calc-btn back-btn" onclick="goHome()">↩ Nazad</button>
     </div>
   </div>
 
-  <!-- Menadžer -->
   <div id="manager" class="screen">
     <div class="header">Menadžerski pregled</div>
     <div class="scroll-container">
@@ -236,11 +217,9 @@
   </div>
 
   <script>
-    // ULTRA BRZA VARIJABLA - bez kompleksne logike
     let currentWaiter = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
-    // BRZA INICIJALIZACIJA
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ 
         data["Konobar "+i] = { expr:"", total:0, numbers:[], order: i }; 
@@ -266,12 +245,10 @@
         .forEach(([name, waiterData]) => {
           const btn = document.createElement("button");
           btn.className = "btn";
-          btn.textContent = name + " (" + (formatNumber(waiterData.total) || 0) + ")";
+          btn.textContent = name + " (" + (waiterData.total || 0) + ")";
           
-          // BRZI KLIK - samo onclick
           btn.onclick = () => openCalc(name);
           
-          // BRZI DUGI KLIK - samo za touch uredjaje
           let longPressTimer;
           btn.ontouchstart = (e) => {
             longPressTimer = setTimeout(() => {
@@ -280,10 +257,7 @@
             }, 500);
           };
           btn.ontouchend = () => {
-            if (longPressTimer) {
-              clearTimeout(longPressTimer);
-              longPressTimer = null;
-            }
+            if (longPressTimer) clearTimeout(longPressTimer);
           };
           btn.oncontextmenu = (e) => {
             e.preventDefault();
@@ -309,106 +283,87 @@
     function openCalc(name){
       currentWaiter = name;
       document.getElementById("waiterName").textContent = name;
-      updateDisplayFast();
+      updateDisplay();
       showScreen("calc");
     }
 
-    // ULTRA BRZA FUNKCIJA ZA PRITISAK - samo jedan event
-    function pressFast(val){
+    // NAJJEDNOSTAVNIJA FUNKCIJA - samo dodaje karakter
+    function addToDisplay(char){
       if (!currentWaiter) return;
       
       let expr = data[currentWaiter].expr || "0";
       
-      // Brza provera za reset nule
-      if (expr === "0" && val !== "," && !['+', '-', '*', '/'].includes(val)) {
+      // Ako je 0, resetuj (osim za . i operatore)
+      if (expr === "0" && char !== '.' && !['+','-','*','/'].includes(char)) {
         expr = "";
       }
       
-      // Brza provera operatora
+      // Spreči više operatora zaredom
       const lastChar = expr.slice(-1);
-      const operators = '+-*/';
-      if (operators.includes(lastChar) && operators.includes(val)) {
+      const operators = ['+','-','*','/'];
+      if (operators.includes(lastChar) && operators.includes(char)) {
         expr = expr.slice(0, -1);
       }
       
-      // Brza provera zareza
-      if (val === ',') {
-        const lastNumber = expr.split(/[\+\-\*\/]/).pop();
-        if (lastNumber.includes(',')) return;
-        if (lastNumber === "") expr += "0";
-      }
-      
-      data[currentWaiter].expr = expr + val;
-      updateDisplayFast();
+      expr += char;
+      data[currentWaiter].expr = expr;
+      updateDisplay();
       saveData();
     }
 
-    function formatNumber(num) {
-      return typeof num === 'number' ? num.toString().replace('.', ',') : num;
-    }
-
-    // BRZO OSVEŽAVANJE EKRANA
-    function updateDisplayFast() {
+    function updateDisplay() {
       const display = document.getElementById("display");
-      let expr = data[currentWaiter].expr || "0";
+      const expr = data[currentWaiter].expr || "0";
       
-      // Brzo formatiranje
-      const formattedExpr = expr.replace(/([+\-*/])/g, ' $1 ').replace(/\s+/g, ' ').trim();
+      // Formatiraj za prikaz - zameni . sa , za prikaz
+      const displayExpr = expr.replace(/\./g, ',');
+      const formattedExpr = displayExpr.replace(/([+\-*/])/g, ' $1 ');
+      
       display.textContent = formattedExpr;
       display.scrollTop = display.scrollHeight;
     }
 
-    // BRZO BIRANJE
-    function clearFast(){
+    function clearDisplay(){
       if (!currentWaiter) return;
       data[currentWaiter].expr = "";
-      updateDisplayFast();
+      updateDisplay();
       saveData();
     }
 
-    // BRZA EVALUACIJA
-    function safeEvalFast(expr){
-      try {
-        const exprWithDots = expr.replace(/,/g, '.');
-        const cleanExpr = exprWithDots.replace(/[^\d\+\-\*\/\.\(\)]/g, '');
-        
-        if (/[+\-*/]$/.test(cleanExpr)) {
-          throw new Error("Izraz završava operatorom");
-        }
-        
-        const result = new Function(`return ${cleanExpr}`)();
-        return Math.round(result * 100) / 100;
-      } catch(e) {
-        throw new Error("Nevažeći izraz");
-      }
-    }
-
-    function calcResultFast(){
+    function calculate(){
       if (!currentWaiter) return;
       
       try {
         const expr = data[currentWaiter].expr;
         if (!expr || expr === "0") return;
         
-        const res = safeEvalFast(expr);
-        data[currentWaiter].total = res;
+        // Zameni , sa . za računanje, ali ostavi . u izrazu
+        const calcExpr = expr.replace(/,/g, '.');
         
-        const nums = expr.match(/\d+[\.,]?\d*/g) || [];
-        data[currentWaiter].numbers = nums.map(n => parseFloat(n.replace(',', '.')));
+        // Proveri da li izraz završava operatorom
+        if (/[+\-*/]$/.test(calcExpr)) {
+          throw new Error("Izraz završava operatorom");
+        }
         
-        document.getElementById("display").textContent = formatNumber(res);
+        const result = new Function(`return ${calcExpr}`)();
+        const roundedResult = Math.round(result * 100) / 100;
+        
+        data[currentWaiter].total = roundedResult;
+        
+        // Ekstraktuj brojeve
+        const numbers = expr.match(/\d+[,\.]?\d*/g) || [];
+        data[currentWaiter].numbers = numbers.map(n => parseFloat(n.replace(',', '.')));
+        
+        // Prikaži rezultat sa zarezom
+        document.getElementById("display").textContent = roundedResult.toString().replace('.', ',');
         saveData();
+        
       } catch(e){ 
-        alert("Greška: " + e.message); 
+        alert("Greška: Nevažeći matematički izraz"); 
         data[currentWaiter].expr = "";
-        updateDisplayFast();
+        updateDisplay();
         saveData();
       }
-    }
-
-    function goHomeFast(){ 
-      showScreen("home"); 
-      loadWaiters(); 
     }
 
     function goHome(){ 
@@ -424,8 +379,7 @@
         .sort((a, b) => (a[1].order || 0) - (b[1].order || 0))
         .forEach(([name, waiterData]) => {
           const nums = waiterData.numbers || [];
-          const formattedNums = nums.map(n => formatNumber(n));
-          rep += `<p><b>${name}:</b> ${formatNumber(waiterData.total)} (${formattedNums.join(", ")})</p>`;
+          rep += `<p><b>${name}:</b> ${waiterData.total} (${nums.join(", ")})</p>`;
           nums.forEach(n => {
             if(!numMap[n]) numMap[n] = [];
             if(!numMap[n].includes(name)) numMap[n].push(name);
@@ -436,7 +390,7 @@
       let hasDuplicates = false;
       for(let num in numMap){
         if(numMap[num].length > 1){
-          rep += `<p class="highlight">Broj ${formatNumber(num)} kod: ${numMap[num].join(", ")}</p>`;
+          rep += `<p class="highlight">Broj ${num} kod: ${numMap[num].join(", ")}</p>`;
           hasDuplicates = true;
         }
       }
@@ -456,7 +410,6 @@
       }
     }
 
-    // BRZA INICIJALIZACIJA
     window.addEventListener('load', () => {
       loadWaiters();
       if('serviceWorker' in navigator){
