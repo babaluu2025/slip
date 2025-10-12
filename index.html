@@ -239,7 +239,7 @@
     <!-- APPLE STYLE KALKULATOR -->
     <div class="calc-grid">
       <!-- GORNJI RED -->
-      <button class="calc-btn top-btn" onclick="clearDisplay()">C</button>
+      <button class="calc-btn top-btn" id="clearBtn">C</button>
       <button class="calc-btn top-btn" onclick="addToDisplay('(')">(</button>
       <button class="calc-btn top-btn" onclick="addToDisplay(')')">)</button>
       <button class="calc-btn top-btn" onclick="addToDisplay('/')">/</button>
@@ -284,6 +284,7 @@
 
   <script>
     let currentWaiter = null;
+    let clearTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
     // BRZO PRETVARANJE ZNAKOVA
@@ -388,9 +389,22 @@
       saveData();
     }
 
-    function clearDisplay(){
+    function clearDisplay(shortPress = true){
       if (!currentWaiter) return;
-      data[currentWaiter].expr = "";
+      
+      if(shortPress){
+        // Kratak pritisak - obriši jedan karakter
+        let expr = data[currentWaiter].expr;
+        if(expr.length > 0){
+          expr = expr.slice(0, -1);
+          data[currentWaiter].expr = expr;
+        }
+      } else {
+        // Dugi pritisak - obriši sve
+        data[currentWaiter].expr = "";
+        data[currentWaiter].total = 0;
+        data[currentWaiter].numbers = [];
+      }
       updateDisplay();
       saveData();
     }
@@ -425,13 +439,15 @@
           .replace(/—/g, '-')
           .replace(/,/g, '.');
         
-        // Provera validnosti
-        if (/[+\-*/]$/.test(calcExpr)) {
+        // Provera validnosti - popravljeno za zarez na kraju
+        const cleanExpr = calcExpr.replace(/,\s*$/, '');
+        
+        if (/[+\-*/]$/.test(cleanExpr)) {
           throw new Error("Izraz završava operatorom");
         }
         
         // BRZO IZRAČUNAVANJE
-        const result = new Function(`return ${calcExpr}`)();
+        const result = new Function(`return ${cleanExpr}`)();
         const roundedResult = Math.round(result * 100) / 100;
         
         data[currentWaiter].total = roundedResult;
@@ -498,6 +514,44 @@
 
     window.addEventListener('load', () => {
       loadWaiters();
+      
+      // POPRAVLJENO C DUGME - sprečava skrolovanje
+      const cBtn = document.getElementById("clearBtn");
+      if(cBtn){
+        cBtn.addEventListener('touchstart', (e)=>{
+          e.preventDefault();
+          clearTimer = setTimeout(() => {
+            clearDisplay(false); // Dugi pritisak - obriši sve
+          }, 700);
+        }, {passive: false});
+        
+        cBtn.addEventListener('touchend', (e)=>{
+          e.preventDefault();
+          if(clearTimer){ 
+            clearTimeout(clearTimer); 
+            clearDisplay(true); // Kratak pritisak - obriši jedan karakter
+          }
+        }, {passive: false});
+        
+        cBtn.addEventListener('mousedown', (e)=>{
+          e.preventDefault();
+          clearTimer = setTimeout(() => {
+            clearDisplay(false); // Dugi pritisak - obriši sve
+          }, 700);
+        });
+        
+        cBtn.addEventListener('mouseup', (e)=>{
+          e.preventDefault();
+          if(clearTimer){ 
+            clearTimeout(clearTimer); 
+            clearDisplay(true); // Kratak pritisak - obriši jedan karakter
+          }
+        });
+        
+        // Spreči context menu
+        cBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+      }
+      
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('sw.js').catch(() => {});
       }
