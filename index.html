@@ -26,7 +26,7 @@
     
     .screen { 
       display:none; 
-      padding:8px;
+      padding:5px;
       min-height: 100vh;
     }
     
@@ -35,10 +35,10 @@
     .btn { 
       background:#444; 
       color:#fff; 
-      padding:15px 10px; 
+      padding:20px 15px; 
       border:none; 
-      border-radius:12px; 
-      font-size:18px; 
+      border-radius:15px; 
+      font-size:22px; 
       width:100%; 
       -webkit-appearance: none;
       touch-action: manipulation;
@@ -46,28 +46,28 @@
     
     .btn:active { background:#666; }
     
-    /* POVEĆAN DISPLAY */
+    /* EKSTRA VELIK DISPLAY */
     .calc-display { 
       background:#000; 
-      padding:20px; 
-      font-size:28px; 
-      border-radius:12px; 
-      min-height:90px; 
-      max-height:130px;
+      padding:25px; 
+      font-size:36px; 
+      border-radius:15px; 
+      min-height:120px; 
+      max-height:160px;
       text-align:right; 
-      margin-bottom:15px;
+      margin-bottom:20px;
       overflow-y: auto;
       word-wrap: break-word;
-      line-height: 1.4;
+      line-height: 1.5;
     }
     
     .header { 
-      font-size:20px; 
-      margin-bottom:15px; 
+      font-size:24px; 
+      margin-bottom:20px; 
       position: sticky;
       top: 0;
       background: #111;
-      padding: 10px 0;
+      padding: 15px 0;
       z-index: 10;
     }
     
@@ -77,148 +77,144 @@
     .scroll-container {
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      max-height: calc(100vh - 120px);
+      max-height: calc(100vh - 140px);
     }
     
     .home-content {
-      padding-bottom: 20px;
+      padding-bottom: 25px;
     }
     
     .bottom-space {
-      height: 20px;
+      height: 25px;
     }
 
-    /* POVEĆAN KALKULATOR GRID */
+    /* APPLE STYLE KALKULATOR */
     .calc-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
-      margin-top: 15px;
+      margin-top: 20px;
     }
 
     .calc-btn {
-      background: #444;
+      background: #505050;
       color: #fff;
       border: none;
-      border-radius: 12px;
-      font-size: 26px;
-      height: 75px;
-      min-height: 75px;
+      border-radius: 50px;
+      font-size: 32px;
+      height: 80px;
+      min-height: 80px;
       -webkit-appearance: none;
       touch-action: manipulation;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0;
+      font-weight: 400;
     }
 
     .calc-btn:active {
-      background: #666;
+      background: #707070;
+      transform: scale(0.95);
     }
 
-    .clear-btn {
-      background: #ff4444;
-      font-size: 22px;
-    }
-
-    .equals-btn {
-      background: #4CAF50;
-      font-size: 22px;
-    }
-
-    .back-btn {
-      background: #2196F3;
-      font-size: 18px;
-    }
-
-    .operator-btn {
-      background: #555;
-      font-size: 22px;
-    }
-
-    .comma-btn {
-      background: #444;
+    /* GORNJI RED - SIVI */
+    .top-btn {
+      background: #a5a5a5;
+      color: #000;
       font-size: 28px;
     }
 
-    /* ANDROID OPTIMIZACIJA */
+    /* DESNI RED - NARANDŽASTI */
+    .right-btn {
+      background: #ff9500;
+      color: #fff;
+      font-size: 34px;
+    }
+
+    /* BROJEVI - TAMNO SIVI */
+    .num-btn {
+      background: #333;
+      color: #fff;
+      font-size: 32px;
+    }
+
+    /* NULA - ŠIRA */
+    .zero-btn {
+      grid-column: span 2;
+      border-radius: 50px;
+      justify-content: flex-start;
+      padding-left: 30px;
+    }
+
+    /* RESPONSIVE */
     @media (max-width: 480px) {
       .screen {
-        padding: 10px;
+        padding: 8px;
       }
       
       .calc-display {
-        font-size: 26px;
-        min-height: 80px;
-        max-height: 110px;
-        padding: 18px;
+        font-size: 32px;
+        min-height: 100px;
+        max-height: 140px;
+        padding: 22px;
       }
       
       .calc-btn {
-        height: 70px;
-        min-height: 70px;
-        font-size: 24px;
+        height: 75px;
+        min-height: 75px;
+        font-size: 28px;
       }
       
       .header {
-        font-size: 18px;
+        font-size: 22px;
       }
       
       .calc-grid {
         gap: 10px;
       }
+      
+      .right-btn {
+        font-size: 30px;
+      }
     }
 
     @media (max-width: 360px) {
       .calc-btn {
-        height: 65px;
-        min-height: 65px;
-        font-size: 22px;
-      }
-      
-      .calc-display {
-        font-size: 24px;
+        height: 70px;
         min-height: 70px;
-        max-height: 100px;
+        font-size: 26px;
       }
-    }
-
-    /* ZA VECI EKRANE */
-    @media (min-width: 768px) {
+      
       .calc-display {
-        font-size: 32px;
-        min-height: 100px;
-        max-height: 150px;
-      }
-      
-      .calc-btn {
-        height: 80px;
-        font-size: 28px;
-      }
-      
-      .calc-grid {
-        gap: 15px;
+        font-size: 30px;
+        min-height: 90px;
+        max-height: 130px;
       }
     }
 
     /* LANDSCAPE MODE */
     @media (max-height: 500px) and (orientation: landscape) {
       .calc-btn {
-        height: 55px;
-        min-height: 55px;
-        font-size: 20px;
+        height: 60px;
+        min-height: 60px;
+        font-size: 22px;
       }
       
       .calc-display {
-        min-height: 60px;
-        max-height: 80px;
-        font-size: 22px;
-        padding: 15px;
+        min-height: 70px;
+        max-height: 90px;
+        font-size: 26px;
+        padding: 18px;
       }
       
       .header {
-        font-size: 16px;
-        margin-bottom: 10px;
+        font-size: 18px;
+        margin-bottom: 12px;
+      }
+      
+      .calc-grid {
+        gap: 8px;
       }
     }
   </style>
@@ -240,29 +236,39 @@
     <div class="header" id="waiterName"></div>
     <div class="calc-display" id="display">0</div>
     
+    <!-- APPLE STYLE KALKULATOR -->
     <div class="calc-grid">
-      <button class="calc-btn" onclick="addToDisplay('7')">7</button>
-      <button class="calc-btn" onclick="addToDisplay('8')">8</button>
-      <button class="calc-btn" onclick="addToDisplay('9')">9</button>
-      <button class="calc-btn operator-btn" onclick="addToDisplay('/')">/</button>
+      <!-- GORNJI RED -->
+      <button class="calc-btn top-btn" onclick="clearDisplay()">C</button>
+      <button class="calc-btn top-btn" onclick="addToDisplay('(')">(</button>
+      <button class="calc-btn top-btn" onclick="addToDisplay(')')">)</button>
+      <button class="calc-btn top-btn" onclick="addToDisplay('/')">/</button>
       
-      <button class="calc-btn" onclick="addToDisplay('4')">4</button>
-      <button class="calc-btn" onclick="addToDisplay('5')">5</button>
-      <button class="calc-btn" onclick="addToDisplay('6')">6</button>
-      <button class="calc-btn operator-btn" onclick="addToDisplay('*')">×</button>
+      <!-- BROJEVI 7-9 -->
+      <button class="calc-btn num-btn" onclick="addToDisplay('7')">7</button>
+      <button class="calc-btn num-btn" onclick="addToDisplay('8')">8</button>
+      <button class="calc-btn num-btn" onclick="addToDisplay('9')">9</button>
+      <button class="calc-btn right-btn" onclick="addToDisplay('*')">×</button>
       
-      <button class="calc-btn" onclick="addToDisplay('1')">1</button>
-      <button class="calc-btn" onclick="addToDisplay('2')">2</button>
-      <button class="calc-btn" onclick="addToDisplay('3')">3</button>
-      <button class="calc-btn operator-btn" onclick="addToDisplay('-')">-</button>
+      <!-- BROJEVI 4-6 -->
+      <button class="calc-btn num-btn" onclick="addToDisplay('4')">4</button>
+      <button class="calc-btn num-btn" onclick="addToDisplay('5')">5</button>
+      <button class="calc-btn num-btn" onclick="addToDisplay('6')">6</button>
+      <button class="calc-btn right-btn" onclick="addToDisplay('-')">—</button>
       
-      <button class="calc-btn" onclick="addToDisplay('0')">0</button>
-      <button class="calc-btn comma-btn" onclick="addToDisplay('.')">.</button>
-      <button class="calc-btn clear-btn" id="clearBtn">C</button>
-      <button class="calc-btn operator-btn" onclick="addToDisplay('+')">+</button>
+      <!-- BROJEVI 1-3 -->
+      <button class="calc-btn num-btn" onclick="addToDisplay('1')">1</button>
+      <button class="calc-btn num-btn" onclick="addToDisplay('2')">2</button>
+      <button class="calc-btn num-btn" onclick="addToDisplay('3')">3</button>
+      <button class="calc-btn right-btn" onclick="addToDisplay('+')">+</button>
       
-      <button class="calc-btn equals-btn" onclick="calculate()" style="grid-column: span 2;">=</button>
-      <button class="calc-btn back-btn" onclick="goHome()">↩ Nazad</button>
+      <!-- DONJI RED -->
+      <button class="calc-btn num-btn zero-btn" onclick="addToDisplay('0')">0</button>
+      <button class="calc-btn num-btn" onclick="addToDisplay('.')">.</button>
+      <button class="calc-btn right-btn" onclick="calculate()">=</button>
+      
+      <!-- NAZAD DUGME ISPOD -->
+      <button class="btn back-btn" onclick="goHome()" style="grid-column: span 4; margin-top: 10px; background: #2196F3; font-size: 20px;">↩ Nazad na konobare</button>
     </div>
   </div>
 
@@ -278,9 +284,16 @@
 
   <script>
     let currentWaiter = null;
-    let clearTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
+    // BRZO PRETVARANJE ZNAKOVA
+    const operatorMap = {
+      '×': '*',
+      '—': '-',
+      '+': '+',
+      '/': '/'
+    };
+
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ 
         data["Konobar "+i] = { expr:"", total:0, numbers:[], order: i }; 
@@ -348,54 +361,55 @@
       showScreen("calc");
     }
 
+    // ULTRA BRZA FUNKCIJA SA MAPOM ZNAKOVA
     function addToDisplay(char){
       if (!currentWaiter) return;
       
+      // BRZO PRETVARANJE ZNAKOVA
+      const actualChar = operatorMap[char] || char;
+      
       let expr = data[currentWaiter].expr || "0";
       
-      if (expr === "0" && char !== '.' && !['+','-','*','/'].includes(char)) {
+      // Reset ako je 0
+      if (expr === "0" && actualChar !== '.' && !['+','-','*','/','(',')'].includes(actualChar)) {
         expr = "";
       }
       
+      // Spreči duple operatore
       const lastChar = expr.slice(-1);
       const operators = ['+','-','*','/'];
-      if (operators.includes(lastChar) && operators.includes(char)) {
+      if (operators.includes(lastChar) && operators.includes(actualChar)) {
         expr = expr.slice(0, -1);
       }
       
-      expr += char;
+      expr += actualChar;
       data[currentWaiter].expr = expr;
+      updateDisplay();
+      saveData();
+    }
+
+    function clearDisplay(){
+      if (!currentWaiter) return;
+      data[currentWaiter].expr = "";
       updateDisplay();
       saveData();
     }
 
     function updateDisplay() {
       const display = document.getElementById("display");
-      const expr = data[currentWaiter].expr || "0";
+      let expr = data[currentWaiter].expr || "0";
       
-      const displayExpr = expr.replace(/\./g, ',');
-      const formattedExpr = displayExpr.replace(/([+\-*/])/g, ' $1 ');
+      // Formatiranje za prikaz - vraća lepe znakove
+      let displayExpr = expr
+        .replace(/\*/g, '×')
+        .replace(/\-/g, '—')
+        .replace(/\./g, ',');
       
-      display.textContent = formattedExpr;
+      // Dodaj razmake oko operatora za bolju čitljivost
+      displayExpr = displayExpr.replace(/([×—+/])/g, ' $1 ');
+      
+      display.textContent = displayExpr;
       display.scrollTop = display.scrollHeight;
-    }
-
-    function clearDisplay(shortPress = true){
-      if (!currentWaiter) return;
-      
-      if(shortPress){
-        let expr = data[currentWaiter].expr;
-        if(expr.length > 0){
-          expr = expr.slice(0, -1);
-          data[currentWaiter].expr = expr;
-        }
-      } else {
-        data[currentWaiter].expr = "";
-        data[currentWaiter].total = 0;
-        data[currentWaiter].numbers = [];
-      }
-      updateDisplay();
-      saveData();
     }
 
     function calculate(){
@@ -405,20 +419,28 @@
         const expr = data[currentWaiter].expr;
         if (!expr || expr === "0") return;
         
-        const calcExpr = expr.replace(/,/g, '.');
+        // Zameni lepe znakove sa matematičkim
+        const calcExpr = expr
+          .replace(/×/g, '*')
+          .replace(/—/g, '-')
+          .replace(/,/g, '.');
         
+        // Provera validnosti
         if (/[+\-*/]$/.test(calcExpr)) {
           throw new Error("Izraz završava operatorom");
         }
         
+        // BRZO IZRAČUNAVANJE
         const result = new Function(`return ${calcExpr}`)();
         const roundedResult = Math.round(result * 100) / 100;
         
         data[currentWaiter].total = roundedResult;
         
+        // Ekstraktuj brojeve
         const numbers = expr.match(/\d+[,\.]?\d*/g) || [];
         data[currentWaiter].numbers = numbers.map(n => parseFloat(n.replace(',', '.')));
         
+        // Prikaži rezultat
         document.getElementById("display").textContent = roundedResult.toString().replace('.', ',');
         saveData();
         
@@ -476,34 +498,6 @@
 
     window.addEventListener('load', () => {
       loadWaiters();
-      
-      const cBtn = document.getElementById("clearBtn");
-      if(cBtn){
-        cBtn.addEventListener('touchstart', (e)=>{
-          e.preventDefault();
-          clearTimer = setTimeout(() => clearDisplay(false), 700);
-        });
-        
-        cBtn.addEventListener('touchend', (e)=>{
-          e.preventDefault();
-          if(clearTimer){ 
-            clearTimeout(clearTimer); 
-            clearDisplay(true); 
-          }
-        });
-        
-        cBtn.addEventListener('mousedown', ()=>{
-          clearTimer = setTimeout(() => clearDisplay(false), 700);
-        });
-        
-        cBtn.addEventListener('mouseup', ()=>{
-          if(clearTimer){ 
-            clearTimeout(clearTimer); 
-            clearDisplay(true); 
-          }
-        });
-      }
-      
       if('serviceWorker' in navigator){
         navigator.serviceWorker.register('sw.js').catch(() => {});
       }
