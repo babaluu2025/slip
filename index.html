@@ -111,7 +111,6 @@
       align-items: center;
       justify-content: center;
       padding: 0;
-      /* Uklonjen transition za brži odaziv */
     }
 
     .calc-btn:active {
@@ -194,34 +193,34 @@
     </div>
   </div>
 
-  <!-- Kalkulator - ULTRA BRZA VERZIJA -->
+  <!-- Kalkulator - ISPRAVLJENA VERZIJA -->
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
     <div class="calc-display" id="display">0</div>
     
     <div class="calc-grid">
-      <button class="calc-btn" onmousedown="pressFast('7')" ontouchstart="pressFast('7')">7</button>
-      <button class="calc-btn" onmousedown="pressFast('8')" ontouchstart="pressFast('8')">8</button>
-      <button class="calc-btn" onmousedown="pressFast('9')" ontouchstart="pressFast('9')">9</button>
-      <button class="calc-btn operator-btn" onmousedown="pressFast('/')" ontouchstart="pressFast('/')">/</button>
+      <button class="calc-btn" onclick="pressFast('7')">7</button>
+      <button class="calc-btn" onclick="pressFast('8')">8</button>
+      <button class="calc-btn" onclick="pressFast('9')">9</button>
+      <button class="calc-btn operator-btn" onclick="pressFast('/')">/</button>
       
-      <button class="calc-btn" onmousedown="pressFast('4')" ontouchstart="pressFast('4')">4</button>
-      <button class="calc-btn" onmousedown="pressFast('5')" ontouchstart="pressFast('5')">5</button>
-      <button class="calc-btn" onmousedown="pressFast('6')" ontouchstart="pressFast('6')">6</button>
-      <button class="calc-btn operator-btn" onmousedown="pressFast('*')" ontouchstart="pressFast('*')">×</button>
+      <button class="calc-btn" onclick="pressFast('4')">4</button>
+      <button class="calc-btn" onclick="pressFast('5')">5</button>
+      <button class="calc-btn" onclick="pressFast('6')">6</button>
+      <button class="calc-btn operator-btn" onclick="pressFast('*')">×</button>
       
-      <button class="calc-btn" onmousedown="pressFast('1')" ontouchstart="pressFast('1')">1</button>
-      <button class="calc-btn" onmousedown="pressFast('2')" ontouchstart="pressFast('2')">2</button>
-      <button class="calc-btn" onmousedown="pressFast('3')" ontouchstart="pressFast('3')">3</button>
-      <button class="calc-btn operator-btn" onmousedown="pressFast('-')" ontouchstart="pressFast('-')">-</button>
+      <button class="calc-btn" onclick="pressFast('1')">1</button>
+      <button class="calc-btn" onclick="pressFast('2')">2</button>
+      <button class="calc-btn" onclick="pressFast('3')">3</button>
+      <button class="calc-btn operator-btn" onclick="pressFast('-')">-</button>
       
-      <button class="calc-btn" onmousedown="pressFast('0')" ontouchstart="pressFast('0')">0</button>
-      <button class="calc-btn comma-btn" onmousedown="pressFast(',')" ontouchstart="pressFast(',')">,</button>
-      <button class="calc-btn clear-btn" onmousedown="clearFast()" ontouchstart="clearFast()">C</button>
-      <button class="calc-btn operator-btn" onmousedown="pressFast('+')" ontouchstart="pressFast('+')">+</button>
+      <button class="calc-btn" onclick="pressFast('0')">0</button>
+      <button class="calc-btn comma-btn" onclick="pressFast(',')">,</button>
+      <button class="calc-btn clear-btn" onclick="clearFast()">C</button>
+      <button class="calc-btn operator-btn" onclick="pressFast('+')">+</button>
       
-      <button class="calc-btn equals-btn" onmousedown="calcResultFast()" ontouchstart="calcResultFast()" style="grid-column: span 2;">=</button>
-      <button class="calc-btn back-btn" onmousedown="goHomeFast()" ontouchstart="goHomeFast()">↩ Nazad</button>
+      <button class="calc-btn equals-btn" onclick="calcResultFast()" style="grid-column: span 2;">=</button>
+      <button class="calc-btn back-btn" onclick="goHomeFast()">↩ Nazad</button>
     </div>
   </div>
 
@@ -269,17 +268,23 @@
           btn.className = "btn";
           btn.textContent = name + " (" + (formatNumber(waiterData.total) || 0) + ")";
           
-          // BRZI KLIK
+          // BRZI KLIK - samo onclick
           btn.onclick = () => openCalc(name);
           
-          // BRZI DUGI KLIK
+          // BRZI DUGI KLIK - samo za touch uredjaje
           let longPressTimer;
           btn.ontouchstart = (e) => {
             longPressTimer = setTimeout(() => {
+              e.preventDefault();
               changeWaiterName(name);
             }, 500);
           };
-          btn.ontouchend = () => clearTimeout(longPressTimer);
+          btn.ontouchend = () => {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+          };
           btn.oncontextmenu = (e) => {
             e.preventDefault();
             changeWaiterName(name);
@@ -296,6 +301,8 @@
         delete data[oldName];
         saveData();
         loadWaiters();
+      } else if (data[newName]) {
+        alert("Konobar sa tim imenom već postoji!");
       }
     }
 
@@ -306,7 +313,7 @@
       showScreen("calc");
     }
 
-    // ULTRA BRZA FUNKCIJA ZA PRITISAK
+    // ULTRA BRZA FUNKCIJA ZA PRITISAK - samo jedan event
     function pressFast(val){
       if (!currentWaiter) return;
       
