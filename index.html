@@ -13,11 +13,12 @@
       -webkit-user-select: none;
       user-select: none;
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     
     body { 
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
-      margin:0; padding:0; 
       background:#111; color:#fff;
       min-height: 100vh;
       overflow-x: hidden;
@@ -25,9 +26,8 @@
     
     .screen { 
       display:none; 
-      padding:15px;
+      padding:12px;
       min-height: 100vh;
-      position: relative;
     }
     
     .active { display:block; }
@@ -35,163 +35,116 @@
     .btn { 
       background:#444; 
       color:#fff; 
-      padding:15px; 
-      margin:5px; 
+      padding:12px 8px; 
       border:none; 
-      border-radius:10px; 
-      font-size:18px; 
+      border-radius:8px; 
+      font-size:16px; 
       width:100%; 
-      transition:0.1s;
       -webkit-appearance: none;
       touch-action: manipulation;
     }
     
-    .btn:active { background:#777; transform:scale(0.97); }
-    
-    .grid { 
-      display:grid; 
-      grid-template-columns: repeat(3,1fr); 
-      gap:10px; 
-      margin-top:20px;
-    }
+    .btn:active { background:#666; }
     
     /* POVEĆAN EKRAN KALKULATORA */
     .calc-display { 
       background:#000; 
-      padding:20px; 
-      font-size:24px; 
-      border-radius:10px; 
-      min-height:80px; 
-      max-height:120px;
+      padding:15px; 
+      font-size:22px; 
+      border-radius:8px; 
+      min-height:70px; 
+      max-height:100px;
       text-align:right; 
-      margin-bottom:15px;
-      -webkit-user-select: text;
-      user-select: text;
+      margin-bottom:12px;
       overflow-y: auto;
       word-wrap: break-word;
-      line-height: 1.4;
+      line-height: 1.3;
     }
     
     .header { 
-      font-size:20px; 
-      margin-bottom:15px; 
+      font-size:18px; 
+      margin-bottom:12px; 
       position: sticky;
       top: 0;
       background: #111;
-      padding: 10px 0;
+      padding: 8px 0;
       z-index: 10;
     }
     
     .danger { background:#a00; }
     .highlight { color:#0f0; }
     
-    /* POBOLJŠANJE ZA ANDROID - BEZ TASTATURE */
-    .no-keyboard {
-      caret-color: transparent;
-    }
-    
     /* FIX ZA SKROLOVANJE */
     .scroll-container {
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
-      max-height: calc(100vh - 120px);
+      max-height: calc(100vh - 100px);
     }
     
     .home-content {
-      padding-bottom: 20px;
+      padding-bottom: 15px;
     }
     
     .bottom-space {
-      height: 20px;
+      height: 15px;
     }
 
-    /* DUGI KLIK - iOS FIX */
-    .long-press-area {
-      position: relative;
-    }
-
-    /* ANDROID KALKULATOR STIL - POBOLJŠAN */
+    /* ULTRA BRZI KALKULATOR STIL */
     .calc-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 15px;
-      max-width: 100%;
+      gap: 8px;
+      margin-top: 12px;
     }
 
     .calc-btn {
       background: #444;
       color: #fff;
       border: none;
-      border-radius: 10px;
-      font-size: 22px;
-      height: 65px;
-      min-height: 65px;
-      transition: 0.1s;
+      border-radius: 8px;
+      font-size: 20px;
+      height: 60px;
+      min-height: 60px;
       -webkit-appearance: none;
       touch-action: manipulation;
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 0;
+      /* Uklonjen transition za brži odaziv */
     }
 
     .calc-btn:active {
       background: #666;
-      transform: scale(0.95);
     }
 
     .clear-btn {
       background: #ff4444;
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .equals-btn {
       background: #4CAF50;
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .back-btn {
       background: #2196F3;
-      font-size: 16px;
+      font-size: 14px;
     }
 
     .operator-btn {
       background: #555;
-      font-size: 20px;
+      font-size: 18px;
     }
 
-    /* DUGME ZA ZAREZ */
     .comma-btn {
       background: #444;
-      font-size: 24px;
+      font-size: 22px;
     }
 
     /* RESPONSIVE ZA SVE TELEFONE */
     @media (max-width: 380px) {
-      .screen {
-        padding: 12px;
-      }
-      
-      .calc-display {
-        font-size: 22px;
-        min-height: 70px;
-        max-height: 100px;
-        padding: 15px;
-      }
-      
-      .calc-btn {
-        height: 60px;
-        min-height: 60px;
-        font-size: 20px;
-      }
-      
-      .header {
-        font-size: 18px;
-      }
-    }
-
-    @media (max-width: 320px) {
       .screen {
         padding: 10px;
       }
@@ -199,7 +152,7 @@
       .calc-display {
         font-size: 20px;
         min-height: 60px;
-        max-height: 90px;
+        max-height: 80px;
         padding: 12px;
       }
       
@@ -209,33 +162,21 @@
         font-size: 18px;
       }
       
-      .calc-grid {
-        gap: 8px;
+      .header {
+        font-size: 16px;
       }
     }
 
-    /* ZA VECI EKRANE */
-    @media (min-width: 768px) {
-      .calc-display {
-        font-size: 28px;
-        min-height: 100px;
-        max-height: 150px;
+    @media (max-width: 320px) {
+      .calc-btn {
+        height: 50px;
+        min-height: 50px;
+        font-size: 16px;
       }
       
-      .calc-btn {
-        height: 70px;
-        font-size: 24px;
+      .calc-grid {
+        gap: 6px;
       }
-    }
-
-    /* ANIMACIJA ZA NOVE BROJEVE */
-    @keyframes fadeIn {
-      from { opacity: 0.7; transform: translateY(-5px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .new-number {
-      animation: fadeIn 0.3s ease;
     }
   </style>
 </head>
@@ -253,35 +194,34 @@
     </div>
   </div>
 
-  <!-- Kalkulator - SA ZAREZOM UMESTO TAČKE -->
+  <!-- Kalkulator - ULTRA BRZA VERZIJA -->
   <div id="calc" class="screen">
     <div class="header" id="waiterName"></div>
-    <div class="calc-display no-keyboard" id="display">0</div>
+    <div class="calc-display" id="display">0</div>
     
-    <!-- KALKULATOR SA ZAREZOM ZA DECIMALE -->
     <div class="calc-grid">
-      <button class="calc-btn" onclick="press('7')">7</button>
-      <button class="calc-btn" onclick="press('8')">8</button>
-      <button class="calc-btn" onclick="press('9')">9</button>
-      <button class="calc-btn operator-btn" onclick="press('/')">/</button>
+      <button class="calc-btn" onmousedown="pressFast('7')" ontouchstart="pressFast('7')">7</button>
+      <button class="calc-btn" onmousedown="pressFast('8')" ontouchstart="pressFast('8')">8</button>
+      <button class="calc-btn" onmousedown="pressFast('9')" ontouchstart="pressFast('9')">9</button>
+      <button class="calc-btn operator-btn" onmousedown="pressFast('/')" ontouchstart="pressFast('/')">/</button>
       
-      <button class="calc-btn" onclick="press('4')">4</button>
-      <button class="calc-btn" onclick="press('5')">5</button>
-      <button class="calc-btn" onclick="press('6')">6</button>
-      <button class="calc-btn operator-btn" onclick="press('*')">×</button>
+      <button class="calc-btn" onmousedown="pressFast('4')" ontouchstart="pressFast('4')">4</button>
+      <button class="calc-btn" onmousedown="pressFast('5')" ontouchstart="pressFast('5')">5</button>
+      <button class="calc-btn" onmousedown="pressFast('6')" ontouchstart="pressFast('6')">6</button>
+      <button class="calc-btn operator-btn" onmousedown="pressFast('*')" ontouchstart="pressFast('*')">×</button>
       
-      <button class="calc-btn" onclick="press('1')">1</button>
-      <button class="calc-btn" onclick="press('2')">2</button>
-      <button class="calc-btn" onclick="press('3')">3</button>
-      <button class="calc-btn operator-btn" onclick="press('-')">-</button>
+      <button class="calc-btn" onmousedown="pressFast('1')" ontouchstart="pressFast('1')">1</button>
+      <button class="calc-btn" onmousedown="pressFast('2')" ontouchstart="pressFast('2')">2</button>
+      <button class="calc-btn" onmousedown="pressFast('3')" ontouchstart="pressFast('3')">3</button>
+      <button class="calc-btn operator-btn" onmousedown="pressFast('-')" ontouchstart="pressFast('-')">-</button>
       
-      <button class="calc-btn" onclick="press('0')">0</button>
-      <button class="calc-btn comma-btn" onclick="press(',')">,</button>
-      <button id="clearBtn" class="calc-btn clear-btn">C</button>
-      <button class="calc-btn operator-btn" onclick="press('+')">+</button>
+      <button class="calc-btn" onmousedown="pressFast('0')" ontouchstart="pressFast('0')">0</button>
+      <button class="calc-btn comma-btn" onmousedown="pressFast(',')" ontouchstart="pressFast(',')">,</button>
+      <button class="calc-btn clear-btn" onmousedown="clearFast()" ontouchstart="clearFast()">C</button>
+      <button class="calc-btn operator-btn" onmousedown="pressFast('+')" ontouchstart="pressFast('+')">+</button>
       
-      <button class="calc-btn equals-btn" onclick="calcResult()" style="grid-column: span 2;">=</button>
-      <button class="calc-btn back-btn" onclick="goHome()">↩ Nazad</button>
+      <button class="calc-btn equals-btn" onmousedown="calcResultFast()" ontouchstart="calcResultFast()" style="grid-column: span 2;">=</button>
+      <button class="calc-btn back-btn" onmousedown="goHomeFast()" ontouchstart="goHomeFast()">↩ Nazad</button>
     </div>
   </div>
 
@@ -297,12 +237,11 @@
   </div>
 
   <script>
+    // ULTRA BRZA VARIJABLA - bez kompleksne logike
     let currentWaiter = null;
-    let clearTimer = null;
-    let longPressTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
-    // INICIJALIZACIJA PODATAKA - ČUVAMO REDOSLED
+    // BRZA INICIJALIZACIJA
     if(Object.keys(data).length === 0){
       for(let i=1;i<=15;i++){ 
         data["Konobar "+i] = { expr:"", total:0, numbers:[], order: i }; 
@@ -317,84 +256,44 @@
     function showScreen(id){
       document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
-      
-      const scrollContainer = document.querySelector('#' + id + ' .scroll-container');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = 0;
-      }
     }
 
     function loadWaiters(){
-      let list = document.getElementById("waiterList");
+      const list = document.getElementById("waiterList");
       list.innerHTML = "";
       
-      // SORTIRAJ PO REDOSLEDU
-      const waitersArray = Object.entries(data)
-        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
-      
-      for(let [name, waiterData] of waitersArray){
-        let btn = document.createElement("button");
-        btn.className = "btn long-press-area";
-        btn.innerText = name + " (" + (formatNumber(waiterData.total) || 0) + ")";
-        btn.dataset.waiterName = name;
-        
-        // OBICAN KLIK - otvori kalkulator
-        btn.addEventListener('click', function(e) {
-          if (!btn.classList.contains('long-press-active')) {
-            openCalc(name);
-          }
-        });
-        
-        // DUGI KLIK ZA PROMENU IMENA - RADI NA iOS I ANDROID
-        btn.addEventListener('touchstart', function(e) {
-          longPressTimer = setTimeout(() => {
+      Object.entries(data)
+        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0))
+        .forEach(([name, waiterData]) => {
+          const btn = document.createElement("button");
+          btn.className = "btn";
+          btn.textContent = name + " (" + (formatNumber(waiterData.total) || 0) + ")";
+          
+          // BRZI KLIK
+          btn.onclick = () => openCalc(name);
+          
+          // BRZI DUGI KLIK
+          let longPressTimer;
+          btn.ontouchstart = (e) => {
+            longPressTimer = setTimeout(() => {
+              changeWaiterName(name);
+            }, 500);
+          };
+          btn.ontouchend = () => clearTimeout(longPressTimer);
+          btn.oncontextmenu = (e) => {
             e.preventDefault();
             changeWaiterName(name);
-            btn.classList.add('long-press-active');
-          }, 500);
+          };
+          
+          list.appendChild(btn);
         });
-        
-        btn.addEventListener('touchend', function(e) {
-          if (longPressTimer) {
-            clearTimeout(longPressTimer);
-            longPressTimer = null;
-          }
-          setTimeout(() => {
-            btn.classList.remove('long-press-active');
-          }, 200);
-        });
-        
-        // Desktop context menu
-        btn.addEventListener('contextmenu', function(e) {
-          e.preventDefault();
-          changeWaiterName(name);
-        });
-        
-        list.appendChild(btn);
-      }
     }
 
     function changeWaiterName(oldName) {
-      let newName = prompt("Novo ime za " + oldName, oldName);
-      if (newName && newName.trim() !== "") {
-        newName = newName.trim();
-        
-        // Proveri da li ime već postoji
-        if (data[newName]) {
-          alert("Konobar sa imenom '" + newName + "' već postoji!");
-          return;
-        }
-        
-        // Sačuvaj redosled i prebaci podatke
-        const oldData = data[oldName];
-        data[newName] = {
-          expr: oldData.expr,
-          total: oldData.total,
-          numbers: oldData.numbers,
-          order: oldData.order
-        };
+      const newName = prompt("Novo ime za " + oldName, oldName);
+      if (newName && newName.trim() !== "" && !data[newName]) {
+        data[newName] = { ...data[oldName] };
         delete data[oldName];
-        
         saveData();
         loadWaiters();
       }
@@ -402,102 +301,68 @@
 
     function openCalc(name){
       currentWaiter = name;
-      document.getElementById("waiterName").innerText = name;
-      updateDisplay();
+      document.getElementById("waiterName").textContent = name;
+      updateDisplayFast();
       showScreen("calc");
     }
 
-    function press(val){
+    // ULTRA BRZA FUNKCIJA ZA PRITISAK
+    function pressFast(val){
+      if (!currentWaiter) return;
+      
       let expr = data[currentWaiter].expr || "0";
       
-      // Ako je 0, resetuj za novi broj (osim ako nije decimala)
+      // Brza provera za reset nule
       if (expr === "0" && val !== "," && !['+', '-', '*', '/'].includes(val)) {
         expr = "";
       }
       
-      // Provera za validne matematičke znakove
-      const validChars = '0123456789,+-*/';
-      if (!validChars.includes(val)) return;
-      
-      // Provera za duple operatore
+      // Brza provera operatora
       const lastChar = expr.slice(-1);
       const operators = '+-*/';
       if (operators.includes(lastChar) && operators.includes(val)) {
-        expr = expr.slice(0, -1); // zameni poslednji operator
+        expr = expr.slice(0, -1);
       }
       
-      // Provera za više zareza u broju
+      // Brza provera zareza
       if (val === ',') {
         const lastNumber = expr.split(/[\+\-\*\/]/).pop();
-        if (lastNumber.includes(',')) {
-          return; // već postoji zarez u broju
-        }
-        // Ako je prvi karakter zarez, dodaj 0 ispred
-        if (lastNumber === "") {
-          expr += "0";
-        }
+        if (lastNumber.includes(',')) return;
+        if (lastNumber === "") expr += "0";
       }
       
-      expr += val;
-      data[currentWaiter].expr = expr;
-      updateDisplay();
+      data[currentWaiter].expr = expr + val;
+      updateDisplayFast();
       saveData();
     }
 
-    // Formatiranje brojeva sa zarezom za prikaz
     function formatNumber(num) {
-      if (typeof num === 'number') {
-        return num.toString().replace('.', ',');
-      }
-      return num;
+      return typeof num === 'number' ? num.toString().replace('.', ',') : num;
     }
 
-    function updateDisplay() {
+    // BRZO OSVEŽAVANJE EKRANA
+    function updateDisplayFast() {
       const display = document.getElementById("display");
       let expr = data[currentWaiter].expr || "0";
       
-      // Formatiranje za bolji pregled - dodaje razmake oko operatora
-      let formattedExpr = expr
-        .replace(/([+\-*/])/g, ' $1 ')
-        .replace(/\s+/g, ' ')
-        .trim();
-      
-      display.innerHTML = formattedExpr;
-      display.classList.add('new-number');
-      
-      // Automatski skrol na dno
+      // Brzo formatiranje
+      const formattedExpr = expr.replace(/([+\-*/])/g, ' $1 ').replace(/\s+/g, ' ').trim();
+      display.textContent = formattedExpr;
       display.scrollTop = display.scrollHeight;
-      
-      // Ukloni animaciju nakon završetka
-      setTimeout(() => {
-        display.classList.remove('new-number');
-      }, 300);
     }
 
-    // Kratko C = obriši znak, dugo C = obriši sve
-    function clearDisplay(shortPress = true){
-      if(shortPress){
-        let expr = data[currentWaiter].expr;
-        if(expr.length > 0){
-          expr = expr.slice(0, -1);
-          data[currentWaiter].expr = expr;
-        }
-      } else {
-        data[currentWaiter].expr = "";
-        data[currentWaiter].total = 0;
-        data[currentWaiter].numbers = [];
-      }
-      updateDisplay();
+    // BRZO BIRANJE
+    function clearFast(){
+      if (!currentWaiter) return;
+      data[currentWaiter].expr = "";
+      updateDisplayFast();
       saveData();
     }
 
-    // FUNKCIJA ZA EVALUACIJU SA ZAREZIMA
-    function safeEval(expr){
+    // BRZA EVALUACIJA
+    function safeEvalFast(expr){
       try {
-        // Zameni zareze tačkama za JavaScript
         const exprWithDots = expr.replace(/,/g, '.');
-        
-        // Proveri da li izraz završava operatorom
         const cleanExpr = exprWithDots.replace(/[^\d\+\-\*\/\.\(\)]/g, '');
         
         if (/[+\-*/]$/.test(cleanExpr)) {
@@ -507,56 +372,58 @@
         const result = new Function(`return ${cleanExpr}`)();
         return Math.round(result * 100) / 100;
       } catch(e) {
-        throw new Error("Nevažeći matematički izraz: " + e.message);
+        throw new Error("Nevažeći izraz");
       }
     }
 
-    function calcResult(){
+    function calcResultFast(){
+      if (!currentWaiter) return;
+      
       try {
-        let expr = data[currentWaiter].expr;
+        const expr = data[currentWaiter].expr;
         if (!expr || expr === "0") return;
         
-        let res = safeEval(expr);
+        const res = safeEvalFast(expr);
         data[currentWaiter].total = res;
         
-        // Ekstraktuj brojeve iz izraza (sa zarezima)
-        let nums = expr.match(/\d+[\.,]?\d*/g) || [];
+        const nums = expr.match(/\d+[\.,]?\d*/g) || [];
         data[currentWaiter].numbers = nums.map(n => parseFloat(n.replace(',', '.')));
         
-        // Prikaži rezultat sa zarezom
-        document.getElementById("display").innerText = formatNumber(res);
+        document.getElementById("display").textContent = formatNumber(res);
         saveData();
       } catch(e){ 
-        alert("Greška u izrazu: " + e.message); 
+        alert("Greška: " + e.message); 
         data[currentWaiter].expr = "";
-        updateDisplay();
+        updateDisplayFast();
         saveData();
       }
+    }
+
+    function goHomeFast(){ 
+      showScreen("home"); 
+      loadWaiters(); 
     }
 
     function goHome(){ 
       showScreen("home"); 
       loadWaiters(); 
-      saveData(); 
     }
 
     function openManager(){
       let rep = "";
       let numMap = {};
       
-      // Sortiraj po redosledu za menadžerski pregled
-      const waitersArray = Object.entries(data)
-        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
-      
-      for(let [name, waiterData] of waitersArray){
-        let nums = waiterData.numbers || [];
-        let formattedNums = nums.map(n => formatNumber(n));
-        rep += `<p><b>${name}:</b> ${formatNumber(waiterData.total)} (${formattedNums.join(", ")})</p>`;
-        nums.forEach(n => {
-          if(!numMap[n]) numMap[n] = [];
-          if(!numMap[n].includes(name)) numMap[n].push(name);
+      Object.entries(data)
+        .sort((a, b) => (a[1].order || 0) - (b[1].order || 0))
+        .forEach(([name, waiterData]) => {
+          const nums = waiterData.numbers || [];
+          const formattedNums = nums.map(n => formatNumber(n));
+          rep += `<p><b>${name}:</b> ${formatNumber(waiterData.total)} (${formattedNums.join(", ")})</p>`;
+          nums.forEach(n => {
+            if(!numMap[n]) numMap[n] = [];
+            if(!numMap[n].includes(name)) numMap[n].push(name);
+          });
         });
-      }
       
       rep += "<h3>Duplikati brojeva:</h3>";
       let hasDuplicates = false;
@@ -566,69 +433,28 @@
           hasDuplicates = true;
         }
       }
-      if (!hasDuplicates) {
-        rep += "<p>Nema dupliranih brojeva</p>";
-      }
+      if (!hasDuplicates) rep += "<p>Nema dupliranih brojeva</p>";
       
       document.getElementById("report").innerHTML = rep;
       showScreen("manager");
     }
 
     function resetAll(){
-      if(confirm("Da li sigurno želiš obrisati sve?")){
+      if(confirm("Obrisati sve?")){
         for(let name in data){ 
-          data[name] = {
-            expr: "", 
-            total: 0, 
-            numbers: [],
-            order: data[name].order
-          }; 
+          data[name] = { expr: "", total: 0, numbers: [], order: data[name].order }; 
         }
         saveData(); 
         goHome();
       }
     }
 
-    // INICIJALIZACIJA
-    window.addEventListener('load', ()=>{
+    // BRZA INICIJALIZACIJA
+    window.addEventListener('load', () => {
       loadWaiters();
-
-      const cBtn = document.getElementById("clearBtn");
-      if(cBtn){
-        cBtn.addEventListener('touchstart', (e)=>{
-          e.preventDefault();
-          clearTimer = setTimeout(() => clearDisplay(false), 700);
-        });
-        
-        cBtn.addEventListener('touchend', (e)=>{
-          e.preventDefault();
-          if(clearTimer){ 
-            clearTimeout(clearTimer); 
-            clearDisplay(true); 
-          }
-        });
-        
-        cBtn.addEventListener('mousedown', ()=>{
-          clearTimer = setTimeout(() => clearDisplay(false), 700);
-        });
-        
-        cBtn.addEventListener('mouseup', ()=>{
-          if(clearTimer){ 
-            clearTimeout(clearTimer); 
-            clearDisplay(true); 
-          }
-        });
-        
-        cBtn.addEventListener('contextmenu', (e) => e.preventDefault());
-      }
-      
       if('serviceWorker' in navigator){
-        navigator.serviceWorker.register('sw.js').catch(console.error);
+        navigator.serviceWorker.register('sw.js').catch(() => {});
       }
-    });
-
-    window.addEventListener('resize', function() {
-      setTimeout(loadWaiters, 100);
     });
   </script>
 </body>
