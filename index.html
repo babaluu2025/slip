@@ -226,6 +226,9 @@
     <div class="scroll-container">
       <div class="home-content">
         <div id="waiterList"></div>
+        <button class="btn" onclick="addWaiter()" style="background:#28a745;">
+➕ Dodaj konobara
+</button>
         <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
         <div class="bottom-space"></div>
       </div>
@@ -287,6 +290,13 @@
     let clearTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
+    function vibrate(ms = 10){
+
+  if(navigator.vibrate){
+    navigator.vibrate(ms);
+  }
+
+}
     // BRZO PRETVARANJE ZNAKOVA
     const operatorMap = {
       '×': '*',
@@ -310,7 +320,23 @@
       document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
     }
+function addWaiter(){
 
+  vibrate(30);
+
+  const count = Object.keys(data).length + 1;
+
+  data["Konobar " + count] = {
+    expr: "",
+    total: 0,
+    numbers: [],
+    order: count
+  };
+
+  saveData();
+  loadWaiters();
+
+}
     function loadWaiters(){
       const list = document.getElementById("waiterList");
       list.innerHTML = "";
@@ -363,7 +389,9 @@
     }
 
     // ULTRA BRZA FUNKCIJA SA MAPOM ZNAKOVA
-    function addToDisplay(char){
+   function addToDisplay(char){
+
+  vibrate();
       if (!currentWaiter) return;
       
       // BRZO PRETVARANJE ZNAKOVA
@@ -427,6 +455,7 @@
     }
 
     function calculate(){
+      vibrate(20);
       if (!currentWaiter) return;
       
       try {
@@ -514,6 +543,13 @@
 
     window.addEventListener('load', () => {
       loadWaiters();
+      document.querySelectorAll('button').forEach(btn => {
+
+  btn.addEventListener('pointerdown', () => {
+    vibrate(5);
+  });
+
+});
       
       // POPRAVLJENO C DUGME - sprečava skrolovanje
       const cBtn = document.getElementById("clearBtn");
