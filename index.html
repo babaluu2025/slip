@@ -258,6 +258,11 @@
     let clearTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
+    // VIBRACIJA - originalna, kratka i prijatna
+    function vibrate(ms = 10) {
+      if (navigator.vibrate) navigator.vibrate(ms);
+    }
+    
     const operatorMap = {
       '×': '*',
       '—': '-',
@@ -288,6 +293,7 @@
     }
     
     function addWaiter() {
+      vibrate(10);
       const count = Object.keys(data).length + 1;
       data["Konobar " + count] = {
         expr: "",
@@ -345,6 +351,7 @@
     }
 
     function openCalc(name) {
+      vibrate(10);
       currentWaiter = name;
       document.getElementById("waiterName").textContent = name;
       updateDisplay();
@@ -352,6 +359,7 @@
     }
 
     function addToDisplay(char) {
+      vibrate(10);
       if (!currentWaiter) return;
       
       const actualChar = operatorMap[char] || char;
@@ -408,6 +416,7 @@
     }
 
     function calculate() {
+      vibrate(10);
       if (!currentWaiter) return;
       
       try {
@@ -452,7 +461,6 @@
       
       if (!waiter.expr || waiter.expr === "" || waiter.expr === "0") return;
       
-      // Spriječi dupliranje istog unosa
       const lastHistory = waiter.history && waiter.history[0];
       if (lastHistory && lastHistory.expression === waiter.expr && lastHistory.result === waiter.total) {
         return;
@@ -477,12 +485,14 @@
     }
 
     function goHome() { 
-      saveCurrentToHistory();  // <-- OVDJE se snima historija
+      vibrate(10);
+      saveCurrentToHistory();
       showScreen("home"); 
       loadWaiters(); 
     }
 
     function openHistory() {
+      vibrate(10);
       if (!currentWaiter) return;
       
       const history = data[currentWaiter].history || [];
@@ -507,6 +517,7 @@
     }
 
     function clearHistory() {
+      vibrate(10);
       if(confirm("Izbrisati svu istoriju?")) {
         if (data[currentWaiter]) {
           data[currentWaiter].history = [];
@@ -517,10 +528,12 @@
     }
 
     function backToCalc() {
+      vibrate(10);
       showScreen("calc");
     }
 
     function openManager() {
+      vibrate(10);
       let rep = "";
       let numMap = {};
       
