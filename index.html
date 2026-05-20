@@ -9,9 +9,6 @@
   <style>
     * {
       -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      user-select: none;
       box-sizing: border-box;
       margin: 0;
       padding: 0;
@@ -40,11 +37,11 @@
       border-radius:15px; 
       font-size:22px; 
       width:100%; 
-      -webkit-appearance: none;
-      touch-action: manipulation;
+      cursor: pointer;
+      transition: 0.05s linear;
     }
     
-    .btn:active { background:#666; }
+    .btn:active { background:#666; transform: scale(0.98); }
     
     .calc-display { 
       background:#000; 
@@ -102,13 +99,11 @@
       font-size: 32px;
       height: 80px;
       min-height: 80px;
-      -webkit-appearance: none;
-      touch-action: manipulation;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0;
-      font-weight: 400;
+      transition: 0.05s linear;
     }
 
     .calc-btn:active {
@@ -141,7 +136,6 @@
       padding-left: 30px;
     }
 
-    /* HISTORY STILOVI */
     .history-card {
       background:#1b1b1b;
       border-radius:18px;
@@ -169,72 +163,24 @@
     }
 
     @media (max-width: 480px) {
-      .screen {
-        padding: 8px;
-      }
-      
-      .calc-display {
-        font-size: 32px;
-        min-height: 100px;
-        max-height: 140px;
-        padding: 22px;
-      }
-      
-      .calc-btn {
-        height: 75px;
-        min-height: 75px;
-        font-size: 28px;
-      }
-      
-      .header {
-        font-size: 22px;
-      }
-      
-      .calc-grid {
-        gap: 10px;
-      }
-      
-      .right-btn {
-        font-size: 30px;
-      }
+      .screen { padding: 8px; }
+      .calc-display { font-size: 32px; min-height: 100px; max-height: 140px; padding: 22px; }
+      .calc-btn { height: 75px; min-height: 75px; font-size: 28px; }
+      .header { font-size: 22px; }
+      .calc-grid { gap: 10px; }
+      .right-btn { font-size: 30px; }
     }
 
     @media (max-width: 360px) {
-      .calc-btn {
-        height: 70px;
-        min-height: 70px;
-        font-size: 26px;
-      }
-      
-      .calc-display {
-        font-size: 30px;
-        min-height: 90px;
-        max-height: 130px;
-      }
+      .calc-btn { height: 70px; min-height: 70px; font-size: 26px; }
+      .calc-display { font-size: 30px; min-height: 90px; max-height: 130px; }
     }
 
     @media (max-height: 500px) and (orientation: landscape) {
-      .calc-btn {
-        height: 60px;
-        min-height: 60px;
-        font-size: 22px;
-      }
-      
-      .calc-display {
-        min-height: 70px;
-        max-height: 90px;
-        font-size: 26px;
-        padding: 18px;
-      }
-      
-      .header {
-        font-size: 18px;
-        margin-bottom: 12px;
-      }
-      
-      .calc-grid {
-        gap: 8px;
-      }
+      .calc-btn { height: 60px; min-height: 60px; font-size: 22px; }
+      .calc-display { min-height: 70px; max-height: 90px; font-size: 26px; padding: 18px; }
+      .header { font-size: 18px; margin-bottom: 12px; }
+      .calc-grid { gap: 8px; }
     }
   </style>
 </head>
@@ -287,7 +233,6 @@
     </div>
   </div>
 
-  <!-- HISTORY SCREEN -->
   <div id="historyScreen" class="screen">
     <div class="header" id="historyTitle">Istorija</div>
     <div class="scroll-container">
@@ -313,10 +258,9 @@
     let clearTimer = null;
     let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
     
-    function vibrate(ms = 10) {
-      if(navigator.vibrate) {
-        navigator.vibrate(ms);
-      }
+    // Minimalna vibracija samo na važnim akcijama
+    function vibrate(ms = 5) {
+      if(navigator.vibrate) navigator.vibrate(ms);
     }
     
     const operatorMap = {
@@ -349,7 +293,7 @@
     }
     
     function addWaiter() {
-      vibrate(30);
+      vibrate(10);
       const count = Object.keys(data).length + 1;
       data["Konobar " + count] = {
         expr: "",
@@ -414,7 +358,6 @@
     }
 
     function addToDisplay(char) {
-      vibrate();
       if (!currentWaiter) return;
       
       const actualChar = operatorMap[char] || char;
@@ -471,7 +414,6 @@
     }
 
     function calculate() {
-      vibrate(20);
       if (!currentWaiter) return;
       
       try {
@@ -494,23 +436,8 @@
         
         data[currentWaiter].total = roundedResult;
         
-        // ČUVANJE ISTORIJE
-        if(!data[currentWaiter].history) {
-          data[currentWaiter].history = [];
-        }
-        
-        data[currentWaiter].history.unshift({
-          expression: expr,
-          result: roundedResult,
-          time: new Date().toLocaleString('sr-RS', {
-            day:'2-digit',
-            month:'2-digit',
-            year:'numeric',
-            hour:'2-digit',
-            minute:'2-digit'
-          })
-        });
-        
+        // NE snimamo historiju ovdje više!
+        // Samo ažuriramo total i brojeve
         const numbers = expr.match(/\d+[,\.]?\d*/g) || [];
         data[currentWaiter].numbers = numbers.map(n => parseFloat(n.replace(',', '.')));
         
@@ -525,9 +452,51 @@
       }
     }
 
-    // HISTORY FUNKCIJE
+    // NOVA FUNKCIJA: snimanje historije pri povratku na konobare
+    function saveCurrentToHistory() {
+      if (!currentWaiter) return;
+      const waiter = data[currentWaiter];
+      if (!waiter) return;
+      
+      // Ako nema izraza ili je prazan, ne snimaj
+      if (!waiter.expr || waiter.expr === "" || waiter.expr === "0") return;
+      
+      // Ako već postoji identičan zadnji unos, preskoči (da ne duplira)
+      const lastHistory = waiter.history && waiter.history[0];
+      if (lastHistory && lastHistory.expression === waiter.expr && lastHistory.result === waiter.total) {
+        return;
+      }
+      
+      if (!waiter.history) waiter.history = [];
+      
+      waiter.history.unshift({
+        expression: waiter.expr,
+        result: waiter.total,
+        time: new Date().toLocaleString('sr-RS', {
+          day:'2-digit',
+          month:'2-digit',
+          year:'numeric',
+          hour:'2-digit',
+          minute:'2-digit'
+        })
+      });
+      
+      // Opcionalno: ograniči historiju na 100 unosa
+      if (waiter.history.length > 100) waiter.history.pop();
+      
+      saveData();
+    }
+
+    function goHome() { 
+      // SNAIMANJE ISTORIJE PRIJE NEGO ŠTO ODEMO NA HOME
+      saveCurrentToHistory();
+      
+      showScreen("home"); 
+      loadWaiters(); 
+    }
+
     function openHistory() {
-      vibrate(20);
+      if (!currentWaiter) return;
       
       const history = data[currentWaiter].history || [];
       
@@ -561,21 +530,18 @@
     }
 
     function clearHistory() {
-      vibrate(40);
+      vibrate(10);
       if(confirm("Izbrisati svu istoriju?")) {
-        data[currentWaiter].history = [];
-        saveData();
-        openHistory();
+        if (data[currentWaiter]) {
+          data[currentWaiter].history = [];
+          saveData();
+          openHistory();
+        }
       }
     }
 
     function backToCalc() {
       showScreen("calc");
-    }
-
-    function goHome() { 
-      showScreen("home"); 
-      loadWaiters(); 
     }
 
     function openManager() {
@@ -623,13 +589,9 @@
       }
     }
 
+    // Optimizacija za brže dodire - uklonjen nepotreban vibrate na svakom pointerdown
     window.addEventListener('load', () => {
       loadWaiters();
-      document.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('pointerdown', () => {
-          vibrate(5);
-        });
-      });
       
       const cBtn = document.getElementById("clearBtn");
       if(cBtn) {
