@@ -29,17 +29,21 @@
     
     .active { display:block; }
     
-    .btn { 
-      background:#444; 
-      color:#fff; 
-      padding:20px 15px; 
-      border:none; 
-      border-radius:15px; 
-      font-size:22px; 
-      width:100%; 
-      cursor: pointer;
-      transition: 0.05s linear;
-    }
+   .btn { 
+  background:#444; 
+  color:#fff; 
+  padding:20px 15px; 
+  border:none; 
+  border-radius:15px; 
+  font-size:22px; 
+  width:100%; 
+  cursor: pointer;
+  transition: 0.05s linear;
+
+  touch-action: manipulation;
+  -webkit-user-select:none;
+  user-select:none;
+}
     
     .btn:active { background:#666; transform: scale(0.98); }
     
@@ -91,20 +95,26 @@
       margin-top: 20px;
     }
 
-    .calc-btn {
-      background: #505050;
-      color: #fff;
-      border: none;
-      border-radius: 50px;
-      font-size: 32px;
-      height: 80px;
-      min-height: 80px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: 0.05s linear;
-    }
+ .calc-btn {
+  background: #505050;
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 32px;
+  height: 80px;
+  min-height: 80px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.05s linear;
+
+  touch-action: manipulation;
+  -webkit-user-select:none;
+  user-select:none;
+  will-change: transform;
+  transform: translateZ(0);
+}
 
     .calc-btn:active {
       background: #707070;
@@ -593,21 +603,7 @@
           }
         }, {passive: false});
         
-        cBtn.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          clearTimer = setTimeout(() => {
-            clearDisplay(false);
-          }, 700);
-        });
-        
-        cBtn.addEventListener('mouseup', (e) => {
-          e.preventDefault();
-          if(clearTimer) { 
-            clearTimeout(clearTimer); 
-            clearDisplay(true);
-          }
-        });
-        
+       
         cBtn.addEventListener('contextmenu', (e) => e.preventDefault());
       }
       
