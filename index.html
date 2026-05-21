@@ -351,7 +351,6 @@
     }
 
     function openCalc(name) {
-      vibrate(10);
       currentWaiter = name;
       document.getElementById("waiterName").textContent = name;
       updateDisplay();
@@ -485,7 +484,6 @@
     }
 
     function goHome() { 
-      vibrate(10);
       saveCurrentToHistory();
       showScreen("home"); 
       loadWaiters(); 
@@ -517,8 +515,7 @@
     }
 
     function clearHistory() {
-      vibrate(10);
-      if(confirm("Izbrisati svu istoriju?")) {
+        if(confirm("Izbrisati svu istoriju?")) {
         if (data[currentWaiter]) {
           data[currentWaiter].history = [];
           saveData();
@@ -528,12 +525,10 @@
     }
 
     function backToCalc() {
-      vibrate(10);
-      showScreen("calc");
+     showScreen("calc");
     }
 
     function openManager() {
-      vibrate(10);
       let rep = "";
       let numMap = {};
       
