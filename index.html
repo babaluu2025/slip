@@ -3,9 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>Kalkulator Konobara</title>
+  <title>Kalkulator Konobara ☁️</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#111111">
+  
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
     * {
       -webkit-tap-highlight-color: transparent;
@@ -30,20 +34,20 @@
     .active { display:block; }
     
    .btn { 
-  background:#444; 
-  color:#fff; 
-  padding:20px 15px; 
-  border:none; 
-  border-radius:15px; 
-  font-size:22px; 
-  width:100%; 
-  cursor: pointer;
-  transition: 0.05s linear;
-
-  touch-action: manipulation;
-  -webkit-user-select:none;
-  user-select:none;
-}
+      background:#444; 
+      color:#fff; 
+      padding:20px 15px; 
+      border:none; 
+      border-radius:15px; 
+      font-size:22px; 
+      width:100%; 
+      cursor: pointer;
+      transition: 0.05s linear;
+      touch-action: manipulation;
+      -webkit-user-select:none;
+      user-select:none;
+      margin-bottom: 8px;
+    }
     
     .btn:active { background:#666; transform: scale(0.98); }
     
@@ -95,26 +99,25 @@
       margin-top: 20px;
     }
 
- .calc-btn {
-  background: #505050;
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-size: 32px;
-  height: 80px;
-  min-height: 80px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: 0.05s linear;
-
-  touch-action: manipulation;
-  -webkit-user-select:none;
-  user-select:none;
-  will-change: transform;
-  transform: translateZ(0);
-}
+    .calc-btn {
+      background: #505050;
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      font-size: 32px;
+      height: 80px;
+      min-height: 80px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.05s linear;
+      touch-action: manipulation;
+      -webkit-user-select:none;
+      user-select:none;
+      will-change: transform;
+      transform: translateZ(0);
+    }
 
     .calc-btn:active {
       background: #707070;
@@ -172,6 +175,16 @@
       font-size:15px;
     }
 
+    .sync-indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-left: 10px;
+    }
+    .sync-online { background: #28a745; }
+    .sync-offline { background: #dc3545; }
+
     @media (max-width: 480px) {
       .screen { padding: 8px; }
       .calc-display { font-size: 32px; min-height: 100px; max-height: 140px; padding: 22px; }
@@ -197,12 +210,13 @@
 <body>
 
   <div id="home" class="screen active">
-    <div class="header">Izaberi konobara (klik = otvori, DUGI KLIK = promeni ime)</div>
+    <div class="header">Izaberi konobara <span id="syncDot" class="sync-indicator sync-offline" title="Sinhronizacija"></span></div>
     <div class="scroll-container">
       <div class="home-content">
         <div id="waiterList"></div>
         <button class="btn" onclick="addWaiter()" style="background:#28a745;">➕ Dodaj konobara</button>
         <button class="btn" onclick="openManager()">👨‍💼 Menadžer</button>
+        <button class="btn" onclick="exportData()" style="background:#2196F3;">📥 Export backup</button>
         <div class="bottom-space"></div>
       </div>
     </div>
@@ -264,11 +278,94 @@
   </div>
 
   <script>
+    // ==================== SUPABASE KONFIGURACIJA ====================
+    const SUPABASE_URL = 'https://itoyvqqssqmeyxawvulq.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_nbUWlCIXbB48NoBRhH4ucg_PfCAmau1';
+    
+    let supabaseClient = null;
+    try {
+      supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch(e) {
+      console.warn('Supabase offline, radi lokalno');
+    }
+    
+    // ==================== PODACI ====================
     let currentWaiter = null;
     let clearTimer = null;
-    let data = JSON.parse(localStorage.getItem("konobariData") || "{}");
+    let data = {};
     
-    // VIBRACIJA - originalna, kratka i prijatna
+    // ==================== CLOUD FUNKCIJE ====================
+    async function loadFromCloud() {
+      if (!supabaseClient) {
+        loadLocal();
+        updateSyncStatus(false);
+        return;
+      }
+      try {
+        const { data: result, error } = await supabaseClient
+          .from('kalkulator_data')
+          .select('*')
+          .eq('id', 1)
+          .single();
+        
+        if (result) {
+          data = result.podaci || {};
+          updateSyncStatus(true);
+        } else if (error) {
+          await supabaseClient.from('kalkulator_data').upsert({ id: 1, podaci: {} });
+          updateSyncStatus(true);
+        }
+      } catch(e) {
+        loadLocal();
+        updateSyncStatus(false);
+      }
+      
+      if (Object.keys(data).length === 0) initDefaultData();
+    }
+    
+    async function saveToCloud() {
+      saveLocal();
+      if (!supabaseClient) return;
+      try {
+        await supabaseClient.from('kalkulator_data').upsert({ id: 1, podaci: data });
+        updateSyncStatus(true);
+      } catch(e) {
+        updateSyncStatus(false);
+      }
+    }
+    
+    function loadLocal() {
+      data = JSON.parse(localStorage.getItem("konobariData") || "{}");
+      if (Object.keys(data).length === 0) initDefaultData();
+    }
+    
+    function saveLocal() {
+      localStorage.setItem("konobariData", JSON.stringify(data));
+    }
+    
+    function updateSyncStatus(online) {
+      const dot = document.getElementById('syncDot');
+      if (dot) {
+        dot.className = 'sync-indicator ' + (online ? 'sync-online' : 'sync-offline');
+        dot.title = online ? '☁️ Sinhronizovano' : '📱 Lokalno';
+      }
+    }
+    
+    function initDefaultData() {
+      for(let i = 1; i <= 15; i++) { 
+        data["Konobar " + i] = { 
+          expr: "", 
+          total: 0, 
+          numbers: [], 
+          order: i,
+          history: []
+        }; 
+      }
+      saveLocal();
+      saveToCloud();
+    }
+    
+    // VIBRACIJA
     function vibrate(ms = 10) {
       if (navigator.vibrate) navigator.vibrate(ms);
     }
@@ -280,29 +377,12 @@
       '/': '/'
     };
 
-    if(Object.keys(data).length === 0) {
-      for(let i = 1; i <= 15; i++) { 
-        data["Konobar " + i] = { 
-          expr: "", 
-          total: 0, 
-          numbers: [], 
-          order: i,
-          history: []
-        }; 
-      }
-      saveData();
-    }
-
-    function saveData() { 
-      localStorage.setItem("konobariData", JSON.stringify(data)); 
-    }
-
     function showScreen(id) {
       document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
       document.getElementById(id).classList.add("active");
     }
     
-    function addWaiter() {
+    async function addWaiter() {
       vibrate(10);
       const count = Object.keys(data).length + 1;
       data["Konobar " + count] = {
@@ -312,7 +392,7 @@
         order: count,
         history: []
       };
-      saveData();
+      await saveToCloud();
       loadWaiters();
     }
     
@@ -348,12 +428,12 @@
         });
     }
 
-    function changeWaiterName(oldName) {
+    async function changeWaiterName(oldName) {
       const newName = prompt("Novo ime za " + oldName, oldName);
       if (newName && newName.trim() !== "" && !data[newName]) {
         data[newName] = { ...data[oldName] };
         delete data[oldName];
-        saveData();
+        await saveToCloud();
         loadWaiters();
       } else if (data[newName]) {
         alert("Konobar sa tim imenom već postoji!");
@@ -367,7 +447,7 @@
       showScreen("calc");
     }
 
-    function addToDisplay(char) {
+    async function addToDisplay(char) {
       vibrate(10);
       if (!currentWaiter) return;
       
@@ -388,7 +468,7 @@
       expr += actualChar;
       data[currentWaiter].expr = expr;
       updateDisplay();
-      saveData();
+      await saveToCloud();
     }
 
     function clearDisplay(shortPress = true) {
@@ -406,12 +486,12 @@
         data[currentWaiter].numbers = [];
       }
       updateDisplay();
-      saveData();
+      saveToCloud();
     }
 
     function updateDisplay() {
       const display = document.getElementById("display");
-      let expr = data[currentWaiter].expr || "0";
+      let expr = data[currentWaiter]?.expr || "0";
       
       let displayExpr = expr
         .replace(/\*/g, '×')
@@ -424,7 +504,7 @@
       display.scrollTop = display.scrollHeight;
     }
 
-    function calculate() {
+    async function calculate() {
       vibrate(10);
       if (!currentWaiter) return;
       
@@ -437,13 +517,11 @@
           .replace(/—/g, '-')
           .replace(/,/g, '.');
         
-        const cleanExpr = calcExpr.replace(/,\s*$/, '');
-        
-        if (/[+\-*/]$/.test(cleanExpr)) {
+        if (/[+\-*/]$/.test(calcExpr)) {
           throw new Error("Izraz završava operatorom");
         }
         
-        const result = new Function(`return ${cleanExpr}`)();
+        const result = new Function(`return ${calcExpr}`)();
         const roundedResult = Math.round(result * 100) / 100;
         
         data[currentWaiter].total = roundedResult;
@@ -452,18 +530,17 @@
         data[currentWaiter].numbers = numbers.map(n => parseFloat(n.replace(',', '.')));
         
         document.getElementById("display").textContent = roundedResult.toString().replace('.', ',');
-        saveData();
+        await saveToCloud();
         
       } catch(e) { 
         alert("Greška: Nevažeći matematički izraz"); 
         data[currentWaiter].expr = "";
         updateDisplay();
-        saveData();
+        await saveToCloud();
       }
     }
 
-    // Snimanje historije tek kada se ide nazad na konobare
-    function saveCurrentToHistory() {
+    async function saveCurrentToHistory() {
       if (!currentWaiter) return;
       const waiter = data[currentWaiter];
       if (!waiter) return;
@@ -490,11 +567,11 @@
       });
       
       if (waiter.history.length > 100) waiter.history.pop();
-      saveData();
+      await saveToCloud();
     }
 
-    function goHome() { 
-      saveCurrentToHistory();
+    async function goHome() { 
+      await saveCurrentToHistory();
       showScreen("home"); 
       loadWaiters(); 
     }
@@ -524,18 +601,18 @@
       showScreen("historyScreen");
     }
 
-    function clearHistory() {
-        if(confirm("Izbrisati svu istoriju?")) {
+    async function clearHistory() {
+      if(confirm("Izbrisati svu istoriju?")) {
         if (data[currentWaiter]) {
           data[currentWaiter].history = [];
-          saveData();
+          await saveToCloud();
           openHistory();
         }
       }
     }
 
     function backToCalc() {
-     showScreen("calc");
+      showScreen("calc");
     }
 
     function openManager() {
@@ -567,7 +644,7 @@
       showScreen("manager");
     }
 
-    function resetAll() {
+    async function resetAll() {
       if(confirm("Obrisati sve?")) {
         for(let name in data) { 
           data[name] = { 
@@ -578,12 +655,25 @@
             history: []
           }; 
         }
-        saveData(); 
+        await saveToCloud();
         goHome();
       }
     }
 
-    window.addEventListener('load', () => {
+    function exportData() {
+      const exportObj = JSON.stringify(data, null, 2);
+      const blob = new Blob([exportObj], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `kalkulator_backup_${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ==================== INICIJALIZACIJA ====================
+    window.addEventListener('load', async () => {
+      await loadFromCloud();
       loadWaiters();
       
       const cBtn = document.getElementById("clearBtn");
@@ -603,7 +693,6 @@
           }
         }, {passive: false});
         
-       
         cBtn.addEventListener('contextmenu', (e) => e.preventDefault());
       }
       
