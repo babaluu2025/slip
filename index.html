@@ -448,28 +448,30 @@
     }
 
     async function addToDisplay(char) {
-      vibrate(10);
-      if (!currentWaiter) return;
-      
-      const actualChar = operatorMap[char] || char;
-      
-      let expr = data[currentWaiter].expr || "0";
-      
-      if (expr === "0" && actualChar !== '.' && !['+','-','*','/','(',')'].includes(actualChar)) {
-        expr = "";
-      }
-      
-      const lastChar = expr.slice(-1);
-      const operators = ['+','-','*','/'];
-      if (operators.includes(lastChar) && operators.includes(actualChar)) {
-        expr = expr.slice(0, -1);
-      }
-      
-      expr += actualChar;
-      data[currentWaiter].expr = expr;
-      updateDisplay();
-      await saveToCloud();
-    }
+  vibrate(8);
+  if (!currentWaiter) return;
+
+  const actualChar = operatorMap[char] || char;
+
+  let expr = data[currentWaiter].expr || "0";
+
+  if (expr === "0" && actualChar !== '.' && !['+','-','*','/','(',')'].includes(actualChar)) {
+    expr = "";
+  }
+
+  const lastChar = expr.slice(-1);
+  const operators = ['+','-','*','/'];
+
+  if (operators.includes(lastChar) && operators.includes(actualChar)) {
+    expr = expr.slice(0, -1);
+  }
+
+  expr += actualChar;
+  data[currentWaiter].expr = expr;
+  updateDisplay();
+
+  saveLocal();
+}
 
     function clearDisplay(shortPress = true) {
       if (!currentWaiter) return;
